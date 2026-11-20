@@ -1,0 +1,6 @@
+{
+  "type": "ue.isolate",
+  "target": "ue-v2x-99",
+  "params": {},
+  "reason": "UE hors scénario"
+}

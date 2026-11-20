@@ -1,0 +1,25 @@
+id: D3
+name: mobility_fcd
+version: 1.0.0
+producer: I2.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SIMULE
+file: mobility_fcd.csv
+sha256: cdc9515ea838218cdf4f93ececd4399062b2d05a87bf4461ec5695d8bf9a7276
+rows: 100
+schema:
+- column: t_s
+  type: float
+- column: vehicle_id
+  type: string
+- column: x_m
+  type: float
+- column: y_m
+  type: float
+- column: speed_mps
+  type: float
+- column: angle_deg
+  type: float
+- column: edge_id
+  type: string

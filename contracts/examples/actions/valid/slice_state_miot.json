@@ -1,0 +1,8 @@
+{
+  "type": "slice.state",
+  "target": "miot",
+  "params": {
+    "active": false
+  },
+  "reason": "mise en veille de nuit"
+}

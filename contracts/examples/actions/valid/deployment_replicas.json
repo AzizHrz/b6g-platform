@@ -1,0 +1,8 @@
+{
+  "type": "deployment.replicas",
+  "target": "b6g-edge-infer",
+  "params": {
+    "replicas": 3
+  },
+  "reason": "CPU Edge > 70 %"
+}

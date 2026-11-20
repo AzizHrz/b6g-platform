@@ -1,0 +1,7 @@
+{
+  "type": "slice.bandwidth",
+  "target": "v2x",
+  "params": {
+    "rate_mbps": 30
+  }
+}

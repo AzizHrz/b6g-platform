@@ -1,0 +1,40 @@
+id: D2
+name: measure
+version: 1.0.0
+producer: I1.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SYNTHETIQUE
+file: measure.csv
+sha256: 14234b397d00b457b3792f31bfc78951f1eef3a0e4a3a5fecb3512d0ccf8eeaf
+rows: 100
+schema:
+- column: ts
+  type: timestamp
+- column: run_id
+  type: string
+- column: scenario
+  type: string
+- column: slice
+  type: category
+  values:
+  - embb
+  - v2x
+  - miot
+- column: ue_id
+  type: string
+- column: profile
+  type: string
+- column: tool
+  type: string
+- column: metric
+  type: category
+  values:
+  - throughput_mbps
+  - rtt_ms
+  - loss_ratio
+  - attach_time_ms
+- column: value
+  type: float
+- column: unit
+  type: string

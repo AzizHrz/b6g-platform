@@ -1,0 +1,9 @@
+{
+  "type": "slice.bandwidth",
+  "target": "embb",
+  "params": {
+    "rate_mbps": 140,
+    "ceil_mbps": 140
+  },
+  "reason": "dépasse 150 Mbit/s au total"
+}

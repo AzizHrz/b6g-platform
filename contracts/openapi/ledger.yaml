@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: B6G Registre (I-07)
+  version: 1.0.0
+  description: "Journal d'événements b6g.event.v1. MVP : registre chaîné SHA-256 ; ensuite Hyperledger Fabric."
+servers:
+  - url: http://b6g-plat:8082/v1
+components:
+  parameters:
+    Caller:
+      name: X-B6G-Caller
+      in: header
+      required: true
+      schema: {type: string, pattern: "^[a-z0-9_-]+$"}
+  responses:
+    Problem:
+      description: Erreur (RFC 9457)
+      content:
+        application/problem+json:
+          schema: {$ref: "../common.schema.json#/$defs/problem"}
+paths:
+  /health:
+    get:
+      operationId: health
+      responses: {"200": {description: OK, content: {application/json: {schema: {type: object, required: [status]}}}}}
+  /events:
+    post:
+      operationId: postEvent
+      parameters: [{$ref: "#/components/parameters/Caller"}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: "../event.schema.json"}}}
+      responses:
+        "200":
+          description: Inscrit
+          content: {application/json: {schema: {$ref: "../ledger-receipt.schema.json"}}}
+        "400": {$ref: "#/components/responses/Problem"}
+        "409": {$ref: "#/components/responses/Problem"}
+    get:
+      operationId: listEvents
+      parameters:
+        - {name: type, in: query, schema: {type: string}}
+        - {name: since, in: query, schema: {type: string}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 1000, default: 100}}
+      responses:
+        "200":
+          description: Liste paginée
+          content: {application/json: {schema: {type: object, required: [items], properties: {items: {type: array}}}}}
+  /events/{event_id}:
+    get:
+      operationId: getEvent
+      parameters: [{name: event_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        "200": {description: Événement + tx_id + block_number, content: {application/json: {schema: {type: object}}}}
+        "404": {$ref: "#/components/responses/Problem"}
+  /verify/{event_id}:
+    get:
+      operationId: verifyEvent
+      parameters: [{name: event_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        "200":
+          description: Vérification
+          content: {application/json: {schema: {$ref: "../ledger-verify.schema.json"}}}
+        "404": {$ref: "#/components/responses/Problem"}

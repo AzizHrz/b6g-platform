@@ -1,0 +1,8 @@
+{
+  "type": "deployment.placement",
+  "target": "b6g-echo-app",
+  "params": {
+    "tier": "fog"
+  },
+  "reason": "Edge saturé"
+}

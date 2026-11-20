@@ -1,0 +1,12 @@
+# Outils de développement et de test (installés dans .venv par `make setup`)
+-e libs/b6g_common
+-e platform/actuator
+fastapi>=0.110
+uvicorn>=0.29
+httpx>=0.27
+jsonschema>=4.21
+referencing>=0.31
+pyyaml>=6
+pytest>=8
+ruff>=0.5
+openapi-spec-validator>=0.7

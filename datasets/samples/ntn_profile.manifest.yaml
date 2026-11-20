@@ -1,0 +1,26 @@
+id: D6
+name: ntn_profile
+version: 1.0.0
+producer: I2.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SIMULE
+file: ntn_profile.csv
+sha256: b015a7bcd5817912574a438b84c3f83eb9fc3257d7080eb6d137a2357f29caab
+rows: 100
+schema:
+- column: t_s
+  type: float
+- column: segment
+  type: string
+- column: link
+  type: category
+  values:
+  - terrestrial
+  - leo
+- column: elevation_deg
+  type: float
+- column: delay_ms_oneway
+  type: float
+- column: loss_pct
+  type: float

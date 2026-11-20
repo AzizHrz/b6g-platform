@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/dataset-manifest.schema.json",
+  "title": "I-09 Manifeste de jeu de données",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "producer",
+    "created_at",
+    "source",
+    "rows",
+    "schema"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^D[1-8]$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "producer": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string"
+    },
+    "realism": {
+      "enum": [
+        "REEL",
+        "EMULE",
+        "SIMULE",
+        "PRE-CALCULE",
+        "MAQUETTE",
+        "SYNTHETIQUE"
+      ]
+    },
+    "file": {
+      "type": "string"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "time_range": {
+      "type": "object"
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "column",
+          "type"
+        ],
+        "properties": {
+          "column": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "timestamp",
+              "float",
+              "int",
+              "category",
+              "string",
+              "bool"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    "split": {
+      "type": "object"
+    }
+  }
+}

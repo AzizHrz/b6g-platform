@@ -1,0 +1,126 @@
+{
+  "schema": "b6g.snapshot.v1",
+  "ts": "2026-11-20T16:00:00.000Z",
+  "window_s": 30,
+  "slices": {
+    "embb": {
+      "throughput_mbps": 5.756,
+      "latency_ms_p50": 9.664,
+      "latency_ms_p95": 23.526,
+      "loss_ratio": 0.00024371941007053104,
+      "bw_limit_mbps": 60.0,
+      "sessions": 10
+    },
+    "v2x": {
+      "throughput_mbps": 0.612,
+      "latency_ms_p50": 3.701,
+      "latency_ms_p95": 8.631,
+      "loss_ratio": 0.00018843275980207004,
+      "bw_limit_mbps": 20.0,
+      "sessions": 10
+    },
+    "miot": {
+      "throughput_mbps": 0.51,
+      "latency_ms_p50": 27.698,
+      "latency_ms_p95": 61.056,
+      "loss_ratio": 0.00021391227219541106,
+      "bw_limit_mbps": 5.0,
+      "sessions": 10
+    }
+  },
+  "nfs": {
+    "amf": {
+      "cpu_ratio": 0.0304,
+      "memory_bytes": 40926116
+    },
+    "smf": {
+      "cpu_ratio": 0.0301,
+      "memory_bytes": 41839789
+    },
+    "upf": {
+      "cpu_ratio": 0.1398,
+      "memory_bytes": 80220558
+    },
+    "nrf": {
+      "cpu_ratio": 0.0287,
+      "memory_bytes": 39701203
+    },
+    "ausf": {
+      "cpu_ratio": 0.0303,
+      "memory_bytes": 41069019
+    },
+    "udm": {
+      "cpu_ratio": 0.0311,
+      "memory_bytes": 41240379
+    },
+    "udr": {
+      "cpu_ratio": 0.03,
+      "memory_bytes": 41208960
+    },
+    "pcf": {
+      "cpu_ratio": 0.0288,
+      "memory_bytes": 41570728
+    },
+    "nssf": {
+      "cpu_ratio": 0.0293,
+      "memory_bytes": 40237751
+    },
+    "bsf": {
+      "cpu_ratio": 0.03,
+      "memory_bytes": 40430091
+    },
+    "gnb": {
+      "cpu_ratio": 0.1452,
+      "memory_bytes": 79054408
+    }
+  },
+  "tiers": {
+    "edge": {
+      "cpu_ratio": 0.0919,
+      "replicas": {
+        "b6g-echo-app": 0,
+        "b6g-edge-infer": 0
+      }
+    },
+    "fog": {
+      "cpu_ratio": 0.0896,
+      "replicas": {
+        "b6g-echo-app": 1,
+        "b6g-edge-infer": 1
+      }
+    },
+    "cloud": {
+      "cpu_ratio": 0.0918,
+      "replicas": {
+        "b6g-echo-app": 1,
+        "b6g-edge-infer": 1
+      }
+    }
+  },
+  "links": {
+    "n2n3-gnb1": {
+      "delay_ms": 0.0
+    },
+    "n6-embb": {
+      "delay_ms": 0.0
+    },
+    "n6-v2x": {
+      "delay_ms": 0.0
+    },
+    "n6-miot": {
+      "delay_ms": 0.0
+    },
+    "tier-edge": {
+      "delay_ms": 2.0
+    },
+    "tier-fog": {
+      "delay_ms": 10.0
+    },
+    "tier-cloud": {
+      "delay_ms": 40.0
+    }
+  },
+  "energy": {
+    "total_power_watts": 135.38
+  }
+}

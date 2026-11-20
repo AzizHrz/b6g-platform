@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/ledger-receipt.schema.json",
+  "title": "I-07 Accusé du registre",
+  "type": "object",
+  "required": [
+    "event_id",
+    "tx_id",
+    "block_number",
+    "status"
+  ],
+  "properties": {
+    "event_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "tx_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "block_number": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "const": "committed"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "link.netem",
+  "target": "n2n3-gnb1",
+  "params": {},
+  "reason": "retour terrestre"
+}

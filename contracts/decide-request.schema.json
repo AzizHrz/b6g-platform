@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/decide-request.schema.json",
+  "title": "I-05 DecideRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy",
+    "snapshot"
+  ],
+  "properties": {
+    "policy": {
+      "type": "string"
+    },
+    "snapshot": {
+      "$ref": "metric-snapshot.schema.json"
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_actions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    }
+  }
+}

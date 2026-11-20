@@ -1,0 +1,13 @@
+{
+  "schema": "b6g.event.v1",
+  "event_id": "00000000-0000-4000-8000-000000000001",
+  "ts": "2026-11-20T08:30:00.000Z",
+  "source": "actuator",
+  "type": "slice.resized",
+  "severity": "info",
+  "payload": {
+    "slice": "v2x",
+    "rate_mbps": 30
+  },
+  "payload_sha256": "acd690bf932bcc89af8ec18c3b0249ac3facf0b687bc7b580f4ef44c880704fa"
+}

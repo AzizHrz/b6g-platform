@@ -1,0 +1,45 @@
+id: D8
+name: actions_log
+version: 1.0.0
+producer: I1.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SYNTHETIQUE
+file: actions_log.csv
+sha256: a74105dcc87aeb1f0f8b8cdb205c12fd54c41cb160c999652e95c422dae2ae73
+rows: 100
+schema:
+- column: ts
+  type: timestamp
+- column: action_id
+  type: string
+- column: caller
+  type: string
+- column: type
+  type: category
+  values:
+  - slice.bandwidth
+  - slice.state
+  - link.netem
+  - deployment.replicas
+  - deployment.placement
+  - ue.isolate
+  - ue.release
+  - noop
+- column: target
+  type: string
+- column: params_json
+  type: string
+- column: status
+  type: category
+  values:
+  - applied
+  - dry_run
+  - rejected
+  - failed
+- column: decision_id
+  type: string
+- column: sla_ok_before
+  type: bool
+- column: sla_ok_after
+  type: bool

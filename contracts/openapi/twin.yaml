@@ -1,0 +1,44 @@
+openapi: 3.1.0
+info:
+  title: B6G Jumeau numérique (I-06)
+  version: 1.0.0
+  description: "Prédiction what-if d'un ensemble d'actions."
+servers:
+  - url: http://b6g-intel:8091/v1
+components:
+  parameters:
+    Caller:
+      name: X-B6G-Caller
+      in: header
+      required: true
+      schema: {type: string, pattern: "^[a-z0-9_-]+$"}
+  responses:
+    Problem:
+      description: Erreur (RFC 9457)
+      content:
+        application/problem+json:
+          schema: {$ref: "../common.schema.json#/$defs/problem"}
+paths:
+  /health:
+    get:
+      operationId: health
+      responses: {"200": {description: OK, content: {application/json: {schema: {type: object, required: [status]}}}}}
+  /state:
+    get:
+      operationId: getState
+      responses:
+        "200":
+          description: Synchronisation et erreur de calibration
+          content: {application/json: {schema: {type: object, required: [synced_at, calibration_error_pct]}}}
+  /whatif:
+    post:
+      operationId: whatif
+      parameters: [{$ref: "#/components/parameters/Caller"}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: "../whatif-request.schema.json"}}}
+      responses:
+        "200":
+          description: Prédiction
+          content: {application/json: {schema: {$ref: "../whatif-response.schema.json"}}}
+        "400": {$ref: "#/components/responses/Problem"}

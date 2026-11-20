@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/action-request.schema.json",
+  "title": "I-04 ActionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "target",
+    "params",
+    "reason"
+  ],
+  "properties": {
+    "type": {
+      "enum": [
+        "slice.bandwidth",
+        "slice.state",
+        "link.netem",
+        "deployment.replicas",
+        "deployment.placement",
+        "ue.isolate",
+        "ue.release",
+        "noop"
+      ]
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "params": {
+      "type": "object"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "slice.bandwidth"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "$ref": "common.schema.json#/$defs/slice_id"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rate_mbps"
+            ],
+            "properties": {
+              "rate_mbps": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 1000
+              },
+              "ceil_mbps": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 1000
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "slice.state"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "$ref": "common.schema.json#/$defs/slice_id"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "active"
+            ],
+            "properties": {
+              "active": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "link.netem"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "$ref": "common.schema.json#/$defs/link_id"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "delay_ms": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "jitter_ms": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "loss_pct": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "deployment.replicas"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "pattern": "^b6g-[a-z0-9-]+$"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "replicas"
+            ],
+            "properties": {
+              "replicas": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "deployment.placement"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "pattern": "^b6g-[a-z0-9-]+$"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tier"
+            ],
+            "properties": {
+              "tier": {
+                "$ref": "common.schema.json#/$defs/tier_id"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "ue.isolate"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "$ref": "common.schema.json#/$defs/ue_id"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "duration_s": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 86400
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "ue.release"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "$ref": "common.schema.json#/$defs/ue_id"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "noop"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target": {
+            "const": "-"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {}
+          }
+        }
+      }
+    }
+  ]
+}

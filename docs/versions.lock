@@ -1,0 +1,21 @@
+# Versions installées sur la machine de référence (mettre à jour à chaque installation)
+# outil                 version         étape du guide   date
+os                      Debian 13.7     0                2026-11-21
+kernel                  6.12.115        0                2026-11-21
+python                  3.13.5          1                2026-11-21
+git                     2.47.3          1                2026-11-21
+docker-engine           29.9.3          2                2026-11-21
+docker-compose-plugin   5.7.0           2                2026-11-21
+open5gs                 à compléter     INT1
+ueransim                à compléter     INT1
+prometheus              à compléter     INT1
+grafana                 à compléter     INT1
+k3d                     à compléter     4
+k3s                     à compléter     4
+kubectl                 à compléter     4
+helm                    à compléter     4
+qemu                    10.0.13         5                2026-11-21
+libvirt                 11.3.0          5                2026-11-21
+fabric                  à compléter     6
+ollama                  à compléter     7
+llama3.2                3b              7

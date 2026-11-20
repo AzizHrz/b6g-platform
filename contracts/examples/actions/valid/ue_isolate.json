@@ -1,0 +1,8 @@
+{
+  "type": "ue.isolate",
+  "target": "ue-miot-07",
+  "params": {
+    "duration_s": 300
+  },
+  "reason": "flood UDP détecté"
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/event.schema.json",
+  "title": "I-08 Événement b6g.event.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "event_id",
+    "ts",
+    "source",
+    "type",
+    "severity",
+    "payload",
+    "payload_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "b6g.event.v1"
+    },
+    "event_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "ts": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "type": {
+      "enum": [
+        "actuator.applied",
+        "slice.resized",
+        "slice.state",
+        "link.netem",
+        "deployment.scaled",
+        "deployment.moved",
+        "ue.isolated",
+        "ue.released",
+        "alert.qos",
+        "alert.security",
+        "loop.iteration",
+        "model.deployed"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "debug",
+        "info",
+        "warning",
+        "critical"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "payload_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

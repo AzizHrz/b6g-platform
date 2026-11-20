@@ -1,0 +1,10 @@
+{
+  "type": "link.netem",
+  "target": "n2n3-gnb1",
+  "params": {
+    "delay_ms": 30,
+    "jitter_ms": 5,
+    "loss_pct": 0.5
+  },
+  "reason": "bascule satellite LEO"
+}

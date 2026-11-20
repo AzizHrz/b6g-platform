@@ -1,0 +1,22 @@
+# Configuration commune des outils (le dépôt n'est pas un paquet : voir libs/ et platform/actuator/)
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+  "ct: test de contrat (CT-xx)",
+  "int: test de jalon d'intégration (demande la plateforme réelle)",
+]
+addopts = "-q -m 'not int'"
+filterwarnings = ["ignore::DeprecationWarning", "ignore:Using .httpx.:Warning", "ignore:You should not use the .timeout.:Warning"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tools/make_samples.py" = ["E501"]   # tables de données des échantillons

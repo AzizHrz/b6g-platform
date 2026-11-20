@@ -1,0 +1,56 @@
+# I-01 Scénario partagé — source unique de vérité (contrats 1.0.0)
+# Toute modification passe par une PR common/<sujet> et une entrée dans contracts/CHANGELOG.md.
+version: 1.0.0
+plmn: {mcc: "001", mnc: "01"}
+tac: 1
+hosts: {plat: b6g-plat, intel: b6g-intel}          # résolus par /etc/hosts (127.0.0.1 sur une seule machine)
+slices:
+  - id: embb   # vidéo et services aux passagers
+    sst: 1
+    sd: "000001"
+    dnn: embb
+    subnet: 10.45.0.0/16
+    smf: smf-embb
+    upf: upf-embb
+    five_qi: 9
+    sla: {latency_ms_p95_max: 100, throughput_mbps_min: 20, loss_ratio_max: 0.01}
+    bandwidth: {rate_mbps: 60, ceil_mbps: 100}
+  - id: v2x    # messages coopératifs des véhicules
+    sst: 4
+    sd: "000004"
+    dnn: v2x
+    subnet: 10.46.0.0/16
+    smf: smf-v2x
+    upf: upf-v2x
+    five_qi: 83    # si refusé par la WebUI Open5GS : 1 (à vérifier en T03.1)
+    sla: {latency_ms_p95_max: 20, throughput_mbps_min: 2, loss_ratio_max: 0.001}
+    bandwidth: {rate_mbps: 20, ceil_mbps: 40}
+  - id: miot   # capteurs de bord de route et drones
+    sst: 3
+    sd: "000003"
+    dnn: miot
+    subnet: 10.47.0.0/16
+    smf: smf-miot
+    upf: upf-miot
+    five_qi: 9
+    sla: {latency_ms_p95_max: 500, throughput_mbps_min: 0.5, loss_ratio_max: 0.05}
+    bandwidth: {rate_mbps: 5, ceil_mbps: 10}
+capacity: {total_rate_mbps_max: 150}                # somme des rate_mbps des slices (409 au-delà)
+ues:
+  count_per_slice: 10
+  imsi_base: "001010000000001"      # embb 001–010, v2x 011–020, miot 021–030
+  id_pattern: "ue-{slice}-{nn:02d}"
+profiles:
+  embb-video:  {slice: embb, proto: tcp, direction: dl, rate_mbps: 8}
+  v2x-cam:     {slice: v2x,  proto: udp, direction: ul, size_bytes: 300, rate_hz: 10}
+  miot-sensor: {slice: miot, proto: udp, direction: ul, size_bytes: 100, rate_hz: 1}
+tiers:
+  edge:  {k8s_node: k3d-b6g-agent-0, added_rtt_ms: 2,  cpu_millicores: 2000, memory_mb: 2048}
+  fog:   {k8s_node: k3d-b6g-agent-1, added_rtt_ms: 10, cpu_millicores: 4000, memory_mb: 4096}
+  cloud: {k8s_node: k3d-b6g-agent-2, added_rtt_ms: 40, cpu_millicores: 8000, memory_mb: 8192}
+nfs: [amf, smf, upf, nrf, ausf, udm, udr, pcf, nssf, bsf, gnb]
+deployments: [b6g-echo-app, b6g-edge-infer]
+links: [n2n3-gnb1, n6-embb, n6-v2x, n6-miot, tier-edge, tier-fog, tier-cloud]
+ports: {prometheus: 9090, grafana: 3000, pushgateway: 9091, actuator: 8081, ledger: 8082,
+        decision: 8090, twin: 8091, edge_infer_nodeport: 30092, registry: 5000, ollama: 11434,
+        fake_exporter: 9100}

@@ -1,0 +1,8 @@
+{
+  "type": "slice.bandwidth",
+  "target": "miot",
+  "params": {
+    "rate_mbps": 8
+  },
+  "reason": "capteurs en rafale"
+}

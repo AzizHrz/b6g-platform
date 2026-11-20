@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/ledger-verify.schema.json",
+  "title": "I-07 Vérification",
+  "type": "object",
+  "required": [
+    "hash_match",
+    "endorsements"
+  ],
+  "properties": {
+    "hash_match": {
+      "type": "boolean"
+    },
+    "chain_ok": {
+      "type": "boolean"
+    },
+    "endorsements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

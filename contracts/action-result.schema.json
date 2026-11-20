@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/action-result.schema.json",
+  "title": "I-04 ActionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "action_id",
+    "status",
+    "applied_at",
+    "previous",
+    "current",
+    "message"
+  ],
+  "properties": {
+    "action_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "status": {
+      "enum": [
+        "applied",
+        "dry_run",
+        "rejected",
+        "failed"
+      ]
+    },
+    "applied_at": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "previous": {
+      "type": "object"
+    },
+    "current": {
+      "type": "object"
+    },
+    "message": {
+      "type": "string"
+    },
+    "request": {
+      "$ref": "action-request.schema.json"
+    }
+  }
+}

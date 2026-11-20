@@ -1,0 +1,26 @@
+id: D7
+name: security_labels
+version: 1.0.0
+producer: I1.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SYNTHETIQUE
+file: security_labels.csv
+sha256: 50b3d47f87191203ecd0b95621a363daa63c1c1d5376ab8d4cc9073062258290
+rows: 100
+schema:
+- column: start_ts
+  type: timestamp
+- column: end_ts
+  type: timestamp
+- column: ue_id
+  type: string
+- column: src_ip
+  type: string
+- column: label
+  type: category
+  values:
+  - normal
+  - udp_flood
+  - reg_storm
+  - scan

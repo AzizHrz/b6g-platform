@@ -1,0 +1,8 @@
+{
+  "type": "slice.bandwidth",
+  "target": "v2x",
+  "params": {
+    "bw_mbps": 30
+  },
+  "reason": "mauvais nom de champ"
+}

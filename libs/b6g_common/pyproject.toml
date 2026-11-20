@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "b6g-common"
+version = "1.0.0"
+description = "Bibliothèque partagée B6G (M00) : scénario, MetricSnapshot, validation des contrats, événements"
+requires-python = ">=3.11"
+dependencies = ["jsonschema>=4.21", "referencing>=0.31", "pyyaml>=6", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

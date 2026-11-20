@@ -1,0 +1,8 @@
+{
+  "type": "slice.bandwidth",
+  "target": "v2x",
+  "params": {
+    "rate_mbps": 5000
+  },
+  "reason": "trop"
+}

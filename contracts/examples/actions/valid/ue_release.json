@@ -1,0 +1,6 @@
+{
+  "type": "ue.release",
+  "target": "ue-miot-07",
+  "params": {},
+  "reason": "fin de quarantaine"
+}

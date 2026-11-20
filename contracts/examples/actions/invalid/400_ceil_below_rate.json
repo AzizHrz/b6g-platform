@@ -1,0 +1,9 @@
+{
+  "type": "slice.bandwidth",
+  "target": "v2x",
+  "params": {
+    "rate_mbps": 30,
+    "ceil_mbps": 10
+  },
+  "reason": "ceil < rate"
+}

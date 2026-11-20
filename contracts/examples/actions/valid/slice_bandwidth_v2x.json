@@ -1,0 +1,9 @@
+{
+  "type": "slice.bandwidth",
+  "target": "v2x",
+  "params": {
+    "rate_mbps": 30,
+    "ceil_mbps": 50
+  },
+  "reason": "latence p95 27 ms > 20 ms"
+}

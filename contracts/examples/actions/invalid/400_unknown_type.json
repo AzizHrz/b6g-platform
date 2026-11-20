@@ -1,0 +1,6 @@
+{
+  "type": "slice.delete",
+  "target": "v2x",
+  "params": {},
+  "reason": "test"
+}

@@ -1,0 +1,97 @@
+# ─────────────────────────────────────────────────────────────
+# B6G — fichiers exclus du dépôt (§ 9.2.7 du plan maître)
+# Règle : rien de lourd, rien de généré, rien de secret, rien de personnel.
+# ─────────────────────────────────────────────────────────────
+
+# Fichiers de travail locaux (jamais publiés)
+.local/
+*.local.md
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Exécution locale (PID, journaux des mocks, registre de test)
+.run/
+data/
+logs/
+*.log
+
+# Données et artefacts lourds : seuls datasets/samples/ est versionné
+datasets/raw/*
+datasets/processed/*
+!datasets/raw/.gitkeep
+!datasets/processed/.gitkeep
+*.pcap
+*.pcapng
+*.parquet
+!datasets/samples/*.parquet
+*.h5
+*.joblib
+*.onnx
+*.pt
+*.gguf
+!models/**/model_card.md
+
+# Machines virtuelles, images, archives
+*.qcow2
+*.img
+*.iso
+*.vdi
+*.vmdk
+*.ova
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# Outils externes téléchargés ou compilés (installés hors du dépôt)
+fabric-samples/
+bin/
+ns-3*/
+van3twin/
+
+# Configurations générées depuis config/scenario.yaml (régénérer, ne pas fusionner)
+platform/core/generated/
+platform/ran/generated/
+
+# Secrets et identités
+.env
+*.env
+!*.env.example
+kubeconfig*
+*.kubeconfig
+*.key
+*.pem
+*.crt
+*.csr
+*.p12
+*.jks
+id_rsa*
+id_ed25519*
+secrets/
+crypto-config/
+organizations/
+wallet/
+
+# Éditeurs et systèmes
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,41 @@
+id: D1
+name: kpi_timeseries
+version: 1.0.0
+producer: I1.2 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SYNTHETIQUE
+file: kpi_timeseries.csv
+sha256: bfc0b0e40f454ba9c9af6b2a32f607fe46da1b628a9d4db45d8d3651ef361fa6
+rows: 100
+schema:
+- column: ts
+  type: timestamp
+- column: run_id
+  type: string
+- column: slice
+  type: category
+  values:
+  - embb
+  - v2x
+  - miot
+- column: throughput_mbps
+  type: float
+- column: latency_ms_p50
+  type: float
+- column: latency_ms_p95
+  type: float
+- column: loss_ratio
+  type: float
+- column: bw_limit_mbps
+  type: float
+- column: sessions
+  type: int
+- column: upf_cpu_ratio
+  type: float
+- column: upf_memory_bytes
+  type: int
+time_range:
+  start: '2026-11-20T07:00:00.000Z'
+  end: '2026-11-20T07:02:45.000Z'
+  step_s: 5

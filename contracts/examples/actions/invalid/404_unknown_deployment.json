@@ -1,0 +1,8 @@
+{
+  "type": "deployment.replicas",
+  "target": "b6g-unknown",
+  "params": {
+    "replicas": 2
+  },
+  "reason": "inconnu"
+}

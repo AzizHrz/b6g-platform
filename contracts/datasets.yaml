@@ -1,0 +1,48 @@
+# I-09 Jeux de données D1–D8 : colonnes obligatoires (ordre libre, noms exacts) — contrats 1.0.0
+# Types : timestamp (ISO 8601 UTC), float, int, category, string, bool
+D1:
+  name: kpi_timeseries
+  producer: I1.2
+  columns: {ts: timestamp, run_id: string, slice: category, throughput_mbps: float, latency_ms_p50: float,
+            latency_ms_p95: float, loss_ratio: float, bw_limit_mbps: float, sessions: int,
+            upf_cpu_ratio: float, upf_memory_bytes: int}
+  categories: {slice: [embb, v2x, miot]}
+D2:
+  name: measure
+  producer: I1.1
+  columns: {ts: timestamp, run_id: string, scenario: string, slice: category, ue_id: string, profile: string,
+            tool: string, metric: category, value: float, unit: string}
+  categories: {slice: [embb, v2x, miot], metric: [throughput_mbps, rtt_ms, loss_ratio, attach_time_ms]}
+D3:
+  name: mobility_fcd
+  producer: I2.1
+  columns: {t_s: float, vehicle_id: string, x_m: float, y_m: float, speed_mps: float, angle_deg: float, edge_id: string}
+D4:
+  name: handover_log
+  producer: I2.1
+  columns: {t_s: float, run_id: string, ue_id: string, strategy: category, source_cell: string, target_cell: string,
+            interruption_ms: float, rsrp_source_dbm: float, rsrp_target_dbm: float, ping_pong: bool}
+  categories: {strategy: [a3, a3_ttt, predictive]}
+D5:
+  name: v2x_results
+  producer: I2.1
+  columns: {run_id: string, tech: category, density_veh_per_km: float, msg_type: category, distance_bin_m: float,
+            prr: float, latency_ms_mean: float, latency_ms_p95: float}
+  categories: {tech: [nr_v2x_mode1, nr_v2x_mode2, v2n], msg_type: [cam, denm, cpm]}
+D6:
+  name: ntn_profile
+  producer: I2.1
+  columns: {t_s: float, segment: string, link: category, elevation_deg: float, delay_ms_oneway: float, loss_pct: float}
+  categories: {link: [terrestrial, leo]}
+D7:
+  name: security_labels
+  producer: I1.1
+  columns: {start_ts: timestamp, end_ts: timestamp, ue_id: string, src_ip: string, label: category}
+  categories: {label: [normal, udp_flood, reg_storm, scan]}
+D8:
+  name: actions_log
+  producer: I1.1
+  columns: {ts: timestamp, action_id: string, caller: string, type: category, target: string, params_json: string,
+            status: category, decision_id: string, sla_ok_before: bool, sla_ok_after: bool}
+  categories: {type: [slice.bandwidth, slice.state, link.netem, deployment.replicas, deployment.placement, ue.isolate, ue.release, noop],
+               status: [applied, dry_run, rejected, failed]}

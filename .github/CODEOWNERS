@@ -1,0 +1,21 @@
+# Relecteurs automatiques (voir CONTRIBUTING.md § 2).
+# Remplacer OWNER par le nom de l'organisation GitHub. Avec un dépôt personnel, remplacer chaque équipe
+# par les identifiants des membres (@identifiant). Les règles plus bas l'emportent sur les plus hautes.
+/platform/               @OWNER/equipe-1
+/mocks/platform/         @OWNER/equipe-1
+/tools/                  @OWNER/equipe-1
+/intelligence/           @OWNER/equipe-2
+/mocks/intelligence/     @OWNER/equipe-2
+/datasets/               @OWNER/equipe-2
+/models/                 @OWNER/equipe-2
+/config/                 @OWNER/equipe-1 @OWNER/equipe-2
+/contracts/              @OWNER/equipe-1 @OWNER/equipe-2
+/libs/                   @OWNER/equipe-1 @OWNER/equipe-2
+/tests/                  @OWNER/equipe-1 @OWNER/equipe-2
+/docs/                   @OWNER/equipe-1 @OWNER/equipe-2
+/report/                 @OWNER/equipe-1 @OWNER/equipe-2
+# Fichiers d'administration du dépôt : responsable de l'intégration
+/.github/                @OWNER/equipe-1
+/Makefile                @OWNER/equipe-1
+/pyproject.toml          @OWNER/equipe-1
+/README.md               @OWNER/equipe-1

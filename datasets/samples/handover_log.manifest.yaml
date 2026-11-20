@@ -1,0 +1,35 @@
+id: D4
+name: handover_log
+version: 1.0.0
+producer: I2.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SIMULE
+file: handover_log.csv
+sha256: 51c29a30695c58f2ed653315e51c90ea4cafd7600eda99c4c2f79af3619d22be
+rows: 100
+schema:
+- column: t_s
+  type: float
+- column: run_id
+  type: string
+- column: ue_id
+  type: string
+- column: strategy
+  type: category
+  values:
+  - a3
+  - a3_ttt
+  - predictive
+- column: source_cell
+  type: string
+- column: target_cell
+  type: string
+- column: interruption_ms
+  type: float
+- column: rsrp_source_dbm
+  type: float
+- column: rsrp_target_dbm
+  type: float
+- column: ping_pong
+  type: bool

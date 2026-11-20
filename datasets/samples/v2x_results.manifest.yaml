@@ -1,0 +1,35 @@
+id: D5
+name: v2x_results
+version: 1.0.0
+producer: I2.1 / tools/make_samples.py
+created_at: '2026-11-17T00:00:00Z'
+source: échantillon synthétique (graine 42), à remplacer par le producteur
+realism: SIMULE
+file: v2x_results.csv
+sha256: 2236f1c7a3a38602f9cd8d520b22b114daf14365683dbb2f826e6aaadee45d92
+rows: 100
+schema:
+- column: run_id
+  type: string
+- column: tech
+  type: category
+  values:
+  - nr_v2x_mode1
+  - nr_v2x_mode2
+  - v2n
+- column: density_veh_per_km
+  type: float
+- column: msg_type
+  type: category
+  values:
+  - cam
+  - denm
+  - cpm
+- column: distance_bin_m
+  type: float
+- column: prr
+  type: float
+- column: latency_ms_mean
+  type: float
+- column: latency_ms_p95
+  type: float

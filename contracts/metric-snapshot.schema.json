@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/metric-snapshot.schema.json",
+  "title": "I-03 MetricSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "ts",
+    "window_s",
+    "slices",
+    "nfs",
+    "tiers",
+    "links",
+    "energy"
+  ],
+  "properties": {
+    "schema": {
+      "const": "b6g.snapshot.v1"
+    },
+    "ts": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "window_s": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600
+    },
+    "slices": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "embb",
+        "v2x",
+        "miot"
+      ],
+      "properties": {
+        "embb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "throughput_mbps",
+            "latency_ms_p50",
+            "latency_ms_p95",
+            "loss_ratio",
+            "bw_limit_mbps",
+            "sessions"
+          ],
+          "properties": {
+            "throughput_mbps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms_p50": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms_p95": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "loss_ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "bw_limit_mbps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "sessions": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        "v2x": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "throughput_mbps",
+            "latency_ms_p50",
+            "latency_ms_p95",
+            "loss_ratio",
+            "bw_limit_mbps",
+            "sessions"
+          ],
+          "properties": {
+            "throughput_mbps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms_p50": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms_p95": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "loss_ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "bw_limit_mbps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "sessions": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        "miot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "throughput_mbps",
+            "latency_ms_p50",
+            "latency_ms_p95",
+            "loss_ratio",
+            "bw_limit_mbps",
+            "sessions"
+          ],
+          "properties": {
+            "throughput_mbps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms_p50": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms_p95": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "loss_ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "bw_limit_mbps": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "sessions": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "nfs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cpu_ratio",
+          "memory_bytes"
+        ],
+        "properties": {
+          "cpu_ratio": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "memory_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "tiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edge",
+        "fog",
+        "cloud"
+      ],
+      "properties": {
+        "edge": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpu_ratio",
+            "replicas"
+          ],
+          "properties": {
+            "cpu_ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "replicas": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "fog": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpu_ratio",
+            "replicas"
+          ],
+          "properties": {
+            "cpu_ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "replicas": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "cloud": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpu_ratio",
+            "replicas"
+          ],
+          "properties": {
+            "cpu_ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "replicas": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/link_id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "delay_ms"
+        ],
+        "properties": {
+          "delay_ms": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "energy": {
+      "type": "object",
+      "required": [
+        "total_power_watts"
+      ],
+      "properties": {
+        "total_power_watts": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "additionalProperties": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0
+      }
+    }
+  }
+}

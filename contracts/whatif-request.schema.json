@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b6g.local/contracts/whatif-request.schema.json",
+  "title": "I-06 WhatIfRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot",
+    "actions"
+  ],
+  "properties": {
+    "snapshot": {
+      "$ref": "metric-snapshot.schema.json"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "action-request.schema.json"
+      }
+    },
+    "horizon_s": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600
+    }
+  }
+}
