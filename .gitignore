@@ -66,6 +66,7 @@ van3twin/
 # Configurations générées depuis config/scenario.yaml (régénérer, ne pas fusionner)
 platform/core/generated/
 platform/ran/generated/
+platform/observability/generated/
 
 # Secrets et identités
 .env
