@@ -58,7 +58,12 @@ def create_app(sc: dict | None = None, backend: str | None = None, ledger_url: s
     app = FastAPI(title="B6G Actionneur (I-04)", version=__version__)
     app.state.sc = sc
     app.state.state = initial_state(sc)
-    app.state.backend = get_backend(backend or os.environ.get("B6G_ACTUATOR_BACKEND", "memory"))
+    app.state.backend = get_backend(backend or os.environ.get("B6G_ACTUATOR_BACKEND", "memory"), sc)
+    try:
+        app.state.backend.setup(app.state.state)
+        app.state.setup_error = None
+    except Exception as e:  # noqa: BLE001 - plateforme absente : l'API reste disponible, l'erreur est exposée
+        app.state.setup_error = str(e)
     app.state.ledger_url = ledger_url if ledger_url is not None else os.environ.get("B6G_LEDGER_URL")
     app.state.outbox: list[dict] = []          # événements non encore remis au registre
     app.state.counter: Counter = Counter()     # b6g_actions_total{type,status}
@@ -109,7 +114,10 @@ def create_app(sc: dict | None = None, backend: str | None = None, ledger_url: s
 
     @app.get("/v1/health")
     def health():
-        return {"status": "ok", "version": __version__, "backend": app.state.backend.name}
+        body = {"status": "ok", "version": __version__, "backend": app.state.backend.name}
+        if app.state.setup_error:
+            body["setup_error"] = app.state.setup_error
+        return body
 
     @app.get("/v1/state")
     def state(x_b6g_caller: str | None = Header(None)):
@@ -160,6 +168,7 @@ def create_app(sc: dict | None = None, backend: str | None = None, ledger_url: s
             lines.append(f'b6g_slice_bw_limit_mbps{{slice="{sid}"}} {v["rate_mbps"]}')
         for lk, v in app.state.state["links"].items():
             lines.append(f'b6g_link_delay_ms{{link="{lk}"}} {v["delay_ms"]}')
+        lines.extend(app.state.backend.metrics())
         return "\n".join(lines) + "\n"
 
     return app

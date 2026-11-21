@@ -67,3 +67,150 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
 - **Vérification** : `make check` : partie INT0 entièrement OK (Python 3.13.5, modules, `config/scenario.yaml` : 3 slices, 30 UEs). `make test` : lint `ruff` sans erreur, 82 tests réussis.
 - **Problèmes et solutions** : `make check` signale `tc` absent et le module `sctp` non vérifiable, car `/usr/sbin` n'est pas dans le `PATH` de l'utilisateur ; `tc` est bien installé (`/usr/sbin/tc`).
 - **Retour arrière** : `make clean && rm -rf .venv` ; `rm -rf .git`.
+
+### 2026-11-21 — Jalon INT0 validé, tags `int0` et `contracts-1.0.0`
+
+- **Objectif** : valider les contrats 1.0.0 contre les mocks (critère de passage de `docs/INT0.md`).
+- **Machine** : Debian 13.7, noyau 6.12.115+deb13.1-amd64.
+- **Commandes** :
+  ```bash
+  make test-contracts
+  make run-mocks          # chaîne snapshot → décision → jumeau → actionneur → registre, profils peak et incident
+  make stop-mocks
+  git tag int0 && git tag contracts-1.0.0
+  git push origin int0 contracts-1.0.0
+  ```
+- **Résultat** : 82 tests de contrat réussis (CT-01 à CT-08 et validité des schémas). Chaîne HTTP complète fonctionnelle ; registre : 10 événements, `hash_match` et `chain_ok` vrais. Résultats étiquetés SYNTHÉTIQUE / MAQUETTE.
+- **Vérification** : `git ls-remote --tags origin` liste `int0` et `contracts-1.0.0`.
+- **Problèmes et solutions** : aucun.
+- **Retour arrière** : `git push origin :refs/tags/int0 :refs/tags/contracts-1.0.0` puis `git tag -d int0 contracts-1.0.0`.
+
+### 2026-11-21 — Module SCTP et outils réseau (étape 2 du guide, partielle)
+
+- **Objectif** : prérequis noyau de l'interface N2 (gNB ↔ AMF) et outils de mesure de l'Actionneur, pour INT1.
+- **Machine** : Debian 13.7, noyau 6.12.115+deb13.1-amd64.
+- **Commandes** :
+  ```bash
+  sudo modprobe sctp
+  echo sctp | sudo tee /etc/modules-load.d/sctp.conf
+  sudo apt install -y iperf3      # démon iperf3 non activé au démarrage
+  ```
+- **Résultat** : module `sctp` chargé et persistant ; iperf3 3.18 installé (service `iperf3` désactivé). Docker Engine 29.9.3, Compose 5.7.0, `tc` (iproute2 6.15.0), tcpdump et jq déjà présents.
+- **Vérification** : `lsmod | grep sctp` ; `cat /etc/modules-load.d/sctp.conf` ; `iperf3 --version` ; `systemctl is-enabled iperf3` → `disabled`.
+- **Problèmes et solutions** : espace disque libre toujours insuffisant (27 Go, minimum 60 Go) ; à libérer avant le téléchargement des images Open5GS / UERANSIM.
+- **Retour arrière** : `sudo rm /etc/modules-load.d/sctp.conf && sudo modprobe -r sctp` ; `sudo apt remove iperf3`.
+
+### 2026-11-21 — Registre d'images local (T01.5, étape 2 du guide)
+
+- **Objectif** : registre `registry:2` sur le port 5000 (I-12), utilisé à partir des ateliers 8, 9 et 12.
+- **Machine** : Debian 13.7, noyau 6.12.115+deb13.1-amd64 ; espace disque libéré : 105 Go disponibles.
+- **Commandes** :
+  ```bash
+  make up-registry
+  make registry-check      # push puis pull de busybox:1.37 via 127.0.0.1:5000
+  ```
+- **Résultat** : registre actif ; catalogue `{"repositories":["b6g/busybox"]}`.
+- **Vérification** : `curl -s http://127.0.0.1:5000/v2/_catalog`.
+- **Problèmes et solutions** : aucun.
+- **Retour arrière** : `make down-registry` puis `docker volume rm b6g-registry_b6g-registry`.
+
+### 2026-11-21 — Cœur Open5GS à 3 slices et RAN UERANSIM, 30 UEs (T03.1)
+
+- **Objectif** : plateforme v0 du jalon INT1 (ateliers 3, 4 et 6).
+- **Machine** : Debian 13.7, Docker Engine 29.9.3, Compose 5.7.0.
+- **Commandes** :
+  ```bash
+  docker pull gradiant/open5gs:2.7.7 gradiant/ueransim:3.2.8 mongo:6.0
+  make up-core             # platform/core/render.py génère toutes les configurations depuis config/scenario.yaml
+  make core-status
+  docker exec ue-v2x ping -I uesimtun0 -c 3 10.46.0.1
+  ```
+- **Résultat** : 11 fonctions Open5GS (une SMF et une UPF par slice), 1 gNB, 30 UEs enregistrés, 30 sessions PDU
+  (10 par slice). 5QI 83 accepté pour la slice v2x. RTT UE → passerelle UPF ≈ 2 à 3 ms ; sortie N6 vers 8.8.8.8 sans perte.
+- **Vérification** : `make core-status` (10 interfaces `uesimtun` par conteneur d'UE) ; journaux UPF
+  « Number of UPF-Sessions is now 10 » pour chaque slice ; AMF « Number of AMF-UEs is now 30 ».
+- **Problèmes et solutions** :
+  - UPF en redémarrage en boucle, erreur `ioctl(TUNSETIFF): Operation not permitted`. Cause : l'image Open5GS
+    s'exécute sous l'utilisateur non privilégié `open5gs` (uid 999) ; la capacité `NET_ADMIN` est sans effet pour lui.
+    Correction : UPF exécutées en `root` (`user: root`) ; script `platform/core/upf-entrypoint.sh` pour `ogstun` et la NAT.
+  - 48 échecs d'enregistrement initiaux (cause 90) pendant le redémarrage des UPF ; résorbés automatiquement par
+    les nouvelles tentatives des UEs une fois les UPF disponibles.
+- **Retour arrière** : `make down-core` ; `docker volume rm b6g-core_b6g-mongo` pour effacer les abonnés.
+
+### 2026-11-21 — Observabilité : Prometheus, Pushgateway, cAdvisor, Grafana (W1.3)
+
+- **Objectif** : métriques `b6g_*` du contrat I-02 sur un Prometheus réel (port 9090).
+- **Machine** : Debian 13.7, Docker Engine 29.9.3 (magasin d'images containerd).
+- **Commandes** :
+  ```bash
+  make up-obs
+  make obs-reload
+  curl -s http://127.0.0.1:9090/api/v1/targets
+  ```
+- **Résultat** : Prometheus 2.55.1, Pushgateway 1.11.1, cAdvisor 0.55.1, Grafana 10.4.19 ; règles
+  `platform/observability/rules/b6g.rules.yml` ; tableau de bord « B6G — Plateforme v0 (INT1) ».
+- **Vérification** : toutes les cibles `open5gs`, `cadvisor`, `pushgateway` à l'état `up` ;
+  `b6g_ue_registered` = 30 ; `b6g_slice_sessions` = 10 par slice.
+- **Problèmes et solutions** :
+  - cAdvisor 0.49.1 (version cible du plan) n'identifie aucun conteneur : « failed to identify the read-write layer ID ».
+    Cause : Docker 29 utilise le magasin d'images containerd (`io.containerd.snapshotter.v1`), inconnu de cAdvisor 0.49.
+    Correction : cAdvisor 0.55.1.
+  - Cible `actuator` injoignable depuis Prometheus (délai dépassé). Cause : pare-feu UFW actif sur l'hôte, qui bloque
+    les réseaux Docker vers le port 8081. Correction (à exécuter par l'administrateur) :
+    `sudo ufw allow from 172.16.0.0/12 to any port 8081 proto tcp comment 'B6G Prometheus vers Actionneur'`.
+- **Retour arrière** : `make down-obs` ; `sudo ufw delete allow from 172.16.0.0/12 to any port 8081 proto tcp`.
+
+### 2026-11-21 — Actionneur v1, backend tc (W1.2)
+
+- **Objectif** : appliquer `slice.bandwidth` sur la plateforme réelle (I-04), seul point d'action.
+- **Commandes** :
+  ```bash
+  make up-actuator         # uvicorn sur 0.0.0.0:8081, B6G_ACTUATOR_BACKEND=tc
+  curl -X POST http://127.0.0.1:8081/v1/actions -H 'X-B6G-Caller: essai' -H 'Content-Type: application/json' \
+       -d '{"type":"slice.bandwidth","target":"v2x","params":{"rate_mbps":5,"ceil_mbps":10},"reason":"essai"}'
+  ```
+- **Résultat** : sens descendant par HTB dans `upf-<slice>` (classe 1:1 au plafond, classe 1:10 rate / ceil) ;
+  sens montant par policer en entrée de `ogstun`, plafonné à ceil. Les types v2 (`link.netem`, `deployment.*`,
+  `ue.*`, `slice.state`) sont refusés explicitement (prévus à INT3).
+- **Vérification** (iperf3, slice v2x, réalisme ÉMULÉ) :
+
+  | Réglage | Sens descendant mesuré | Sens montant mesuré |
+  | --- | --- | --- |
+  | rate 20 / ceil 40 (scénario) | 38,4 Mbit/s | — |
+  | rate 5 / ceil 10 (action) | 9,44 Mbit/s | 9,64 Mbit/s |
+
+- **Problèmes et solutions** :
+  - Première version : classe HTB unique à la racine ; le débit plafonnait à `rate` (19,1 Mbit/s) car une classe racine
+    ne peut rien emprunter. Correction : classe parente 1:1 au plafond.
+  - `tc qdisc replace … htb` échoue sur une racine HTB existante (« Change operation not supported »). L'Actionneur a
+    renvoyé `503 Échec du backend` et compté l'action `failed`, sans rien prétendre. Correction : création de la
+    racine seulement si elle est absente.
+- **Retour arrière** : `make stop-actuator` ; `docker exec -u 0 upf-<slice> tc qdisc del dev ogstun root`.
+
+### 2026-11-21 — Sondes trafficgen : latence et perte par slice (T03.2, partiel)
+
+- **Objectif** : alimenter `b6g_slice_latency_ms` et `b6g_slice_loss_ratio` (I-02).
+- **Commandes** :
+  ```bash
+  make up-probes           # platform/trafficgen/probe.py, toutes les 5 s
+  curl -s http://127.0.0.1:9091/metrics | grep '^b6g_'
+  ```
+- **Résultat** : latence UE → passerelle UPF p50 ≈ 2,2 ms, p95 ≈ 3 ms, perte nulle sur les 3 slices (ÉMULÉ).
+- **Vérification** : séries présentes dans la Pushgateway et dans Prometheus.
+- **Problèmes et solutions** : aucun.
+- **Retour arrière** : `make stop-probes`.
+
+### 2026-11-21 — Jalon INT1 validé sur M1
+
+- **Objectif** : critère de passage d'INT1 (plan maître § 9.3).
+- **Commandes** :
+  ```bash
+  sudo ufw allow from 172.16.0.0/12 to any port 8081 proto tcp comment 'B6G Prometheus vers Actionneur'
+  .venv/bin/pytest -m int tests/integration/test_int1.py -v
+  ```
+- **Résultat** : 16 tests réussis, 6 ignorés (métriques dont le producteur arrive à INT3–INT5), 0 échec.
+  Détail : `docs/INT1.md`.
+- **Vérification** : `snapshot.build('http://127.0.0.1:9090')` conforme à `metric-snapshot.schema.json`, 10 sessions
+  et latence mesurée pour chaque slice.
+- **Problèmes et solutions** : voir les entrées T03.1, W1.3 et W1.2 ci-dessus.
+- **Retour arrière** : `make stop-probes stop-actuator down-obs down-core down-registry`.
