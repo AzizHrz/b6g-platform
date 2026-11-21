@@ -1,0 +1,7 @@
+slice,reglage,rate_mbps,ceil_mbps,debit_udp_mbps,ecart_relatif_udp,conforme_10pct,goodput_tcp_10ues_mbps,ecart_relatif_tcp
+embb,scenario,60,100,97.71,-0.0229,True,96.253,-0.0375
+embb,consigne/2,30.0,50.0,48.855,-0.0229,True,48.021,-0.0396
+v2x,scenario,20,40,39.085,-0.0229,True,38.269,-0.0433
+v2x,consigne/2,10.0,20.0,19.543,-0.0228,True,18.977,-0.0511
+miot,scenario,5,10,9.773,-0.0227,True,8.703,-0.1297
+miot,consigne/2,2.5,5.0,4.887,-0.0226,True,4.194,-0.1613

@@ -214,3 +214,25 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
   et latence mesurée pour chaque slice.
 - **Problèmes et solutions** : voir les entrées T03.1, W1.3 et W1.2 ci-dessus.
 - **Retour arrière** : `make stop-probes stop-actuator down-obs down-core down-registry`.
+
+### 2026-11-21 — Outils d'expérimentation des ateliers 4 et 6
+
+- **Objectif** : trafics simultanés des 30 UEs (T04.2, T06.3), figures des ateliers, boucle de slicing dynamique (T06.4).
+- **Commandes** :
+  ```bash
+  make setup                         # ajout de matplotlib>=3.8 dans requirements-dev.txt (installé dans .venv)
+  make up-core                       # conteneur iperf : 30 serveurs iperf3, ports 5201 à 5230
+  docker exec iperf sh -c 'ss -ltn | grep -c ":52[0-3][0-9]"'
+  make up-autoscaler                 # puis make stop-autoscaler
+  ```
+- **Résultat** : matplotlib 3.11.2 dans `.venv` ; 30 serveurs iperf3 à l'écoute ; slice-autoscaler opérationnel.
+- **Vérification** : `ss` compte 30 ports ; `results/` des ateliers 4 et 6 produits.
+- **Problèmes et solutions** :
+  - Serveurs iperf3 non démarrés (« Usage: iperf3 … »). Cause : Docker Compose remplace `$p` et `$(seq …)` par
+    ses propres variables (vides). Correction : échappement `$$` dans la commande générée par `render.py`.
+  - Débit UDP surestimé en mode inverse (`-R`) : le champ `end.sum` d'iperf3 porte le débit émis. Correction :
+    lecture de `end.sum_received` (débit reçu) dans `platform/trafficgen/load.py` ; mesures des ateliers 4 et 6 refaites.
+  - Écart de −13 % à −16 % sur la slice miot avec 10 flux TCP : goodput TCP réduit par les pertes dans la file HTB à
+    faible débit (4 955 paquets rejetés). Méthode de référence retenue pour le contrôle des plafonds : UDP à 1,5 × ceil
+    (écart −2,3 %, en-têtes IP/UDP).
+- **Retour arrière** : `make stop-autoscaler` ; retrait de matplotlib de `requirements-dev.txt` puis `make setup`.

@@ -36,6 +36,7 @@ HOST_OCTET = {"mongo": 2, "nrf": 10, "ausf": 11, "udm": 12, "udr": 13, "pcf": 14
               "amf": 20, "gnb": 50, "iperf": 70}
 SMF_BASE, UPF_BASE, UE_BASE = 31, 41, 61
 SBI_PORT, METRICS_PORT = 7777, 9090
+IPERF_BASE_PORT = 5201
 
 # Valeurs de test publiques de UERANSIM (clé et OPc d'exemple) : aucune carte SIM réelle.
 TEST_K = "465B5CE8B199B49FAA5F0A2EE238A6BC"
@@ -234,8 +235,13 @@ def compose(sc: dict, a: dict[str, str]) -> dict:
                        "volumes": [f"{ran}/gnb.yaml:/gnb.yaml:ro"], "depends_on": ["amf"],
                        "networks": {net: {"ipv4_address": a["gnb"]}}, "restart": "unless-stopped"}
     # Serveur de mesure côté réseau de données (N6) : joint par les UEs à travers la NAT de leur UPF
-    services["iperf"] = {"image": IMAGES["ueransim"], "container_name": "iperf", "entrypoint": ["iperf3"],
-                         "command": ["-s"], "networks": {net: {"ipv4_address": a["iperf"]}},
+    # Un serveur iperf3 par UE (un serveur ne traite qu'un test à la fois) : ports IPERF_BASE_PORT + index d'UE
+    n_ues = sc["ues"]["count_per_slice"] * len(sc["slices"])
+    # « $$ » : échappement de « $ » pour Docker Compose (sinon interprété comme variable de Compose)
+    loop = (f"for p in $$(seq {IPERF_BASE_PORT} {IPERF_BASE_PORT + n_ues - 1}); do iperf3 -s -D -p $$p; done; "
+            "exec sleep infinity")
+    services["iperf"] = {"image": IMAGES["ueransim"], "container_name": "iperf", "entrypoint": ["sh", "-c"],
+                         "command": [loop], "networks": {net: {"ipv4_address": a["iperf"]}},
                          "restart": "unless-stopped"}
     n = sc["ues"]["count_per_slice"]
     for s in sc["slices"]:
