@@ -5,7 +5,7 @@
 | Prometheus | 2.55.1 | 9090 | Collecte toutes les 5 s, rétention 15 jours, règles `b6g_*` (`rules/b6g.rules.yml`) |
 | Pushgateway | 1.11.1 | 9091 | Reçoit latence et perte des sondes trafficgen |
 | cAdvisor | 0.55.1 | — | CPU et mémoire de chaque conteneur du projet `b6g-core` |
-| Grafana | 10.4.19 | 3000 | Tableau de bord « B6G — Plateforme v0 (INT1) », lecture anonyme |
+| Grafana | 10.4.19 | 3000 | Tableaux de bord « B6G — Plateforme v0 (INT1) » et « B6G — Multi-UE et congestion (atelier 4) » (seuils SLA du scénario), lecture anonyme |
 
 ## Sources des métriques I-02 à INT1
 

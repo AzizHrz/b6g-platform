@@ -1,0 +1,518 @@
+{
+  "editable": true,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Mbits"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "sum(b6g_slice_throughput_mbps{slice=\"embb\"})",
+          "legendFormat": "servi",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_bw_limit_mbps{slice=\"embb\"}",
+          "legendFormat": "rate (Actionneur)",
+          "refId": "B"
+        }
+      ],
+      "title": "embb : débit servi et limite (Mbit/s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 2,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_latency_ms{slice=\"embb\",quantile=\"0.95\"}",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "title": "embb : latence p95 (SLA 100 ms)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.01
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 3,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_loss_ratio{slice=\"embb\"}",
+          "legendFormat": "perte",
+          "refId": "A"
+        }
+      ],
+      "title": "embb : perte (SLA 0.01)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Mbits"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 7
+      },
+      "id": 4,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "sum(b6g_slice_throughput_mbps{slice=\"v2x\"})",
+          "legendFormat": "servi",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_bw_limit_mbps{slice=\"v2x\"}",
+          "legendFormat": "rate (Actionneur)",
+          "refId": "B"
+        }
+      ],
+      "title": "v2x : débit servi et limite (Mbit/s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 7
+      },
+      "id": 5,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_latency_ms{slice=\"v2x\",quantile=\"0.95\"}",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "title": "v2x : latence p95 (SLA 20 ms)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.001
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 7
+      },
+      "id": 6,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_loss_ratio{slice=\"v2x\"}",
+          "legendFormat": "perte",
+          "refId": "A"
+        }
+      ],
+      "title": "v2x : perte (SLA 0.001)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Mbits"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "id": 7,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "sum(b6g_slice_throughput_mbps{slice=\"miot\"})",
+          "legendFormat": "servi",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_bw_limit_mbps{slice=\"miot\"}",
+          "legendFormat": "rate (Actionneur)",
+          "refId": "B"
+        }
+      ],
+      "title": "miot : débit servi et limite (Mbit/s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 500
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 14
+      },
+      "id": 8,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_latency_ms{slice=\"miot\",quantile=\"0.95\"}",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "title": "miot : latence p95 (SLA 500 ms)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 14
+      },
+      "id": 9,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_slice_loss_ratio{slice=\"miot\"}",
+          "legendFormat": "perte",
+          "refId": "A"
+        }
+      ],
+      "title": "miot : perte (SLA 0.05)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "id": 10,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_nf_cpu_ratio{nf=~\"gnb|upf-.+\"}",
+          "legendFormat": "{{nf}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU : gNB et UPF (fraction d'un cœur)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b6g-prom"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "id": 11,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b6g-prom"
+          },
+          "expr": "b6g_nf_memory_bytes{nf=~\"gnb|amf|smf-.+|upf-.+\"}",
+          "legendFormat": "{{nf}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Mémoire : gNB, AMF, SMF, UPF",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": [
+    "b6g",
+    "a04",
+    "a06"
+  ],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "B6G — Multi-UE et congestion (atelier 4)",
+  "uid": "b6g-multiue",
+  "version": 1
+}
