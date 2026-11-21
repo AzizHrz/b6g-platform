@@ -26,3 +26,5 @@ pushgateway             1.11.1          INT1             2026-11-21
 cadvisor                0.55.1          INT1             2026-11-21   # 0.49 incompatible avec le magasin containerd de Docker 29
 registry                2               2                2026-11-21
 matplotlib              3.11.2          A04/A06          2026-11-21
+tshark                  4.4.19          3                2026-11-21
+virt-install            5.0.0           5                2026-11-21

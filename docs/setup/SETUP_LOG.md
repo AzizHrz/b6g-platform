@@ -236,3 +236,46 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
     faible débit (4 955 paquets rejetés). Méthode de référence retenue pour le contrôle des plafonds : UDP à 1,5 × ceil
     (écart −2,3 %, en-têtes IP/UDP).
 - **Retour arrière** : `make stop-autoscaler` ; retrait de matplotlib de `requirements-dev.txt` puis `make setup`.
+
+### 2026-11-21 — Test global de l'environnement et documentation (T01.4, T01.6, étapes 0, 3 et 5 du guide)
+
+- **Objectif** : critère de l'atelier 1 (`make env-check` vert sur M1) ; outils de capture de l'atelier 3 ;
+  outils de virtualisation de l'atelier 7.
+- **Machine** : Debian 13.7, noyau 6.12.115+deb13.1-amd64.
+- **Commandes** :
+  ```bash
+  sudo apt install -y tshark                                   # administrateur ; capture non-root : « Non »
+  echo '127.0.0.1 b6g-plat b6g-intel' | sudo tee -a /etc/hosts  # administrateur ; une seule machine pour l'instant
+  make env-check                                               # tools/env_check.py
+  make vm-check                                                # platform/vm/install_vm_tools.sh
+  bash platform/install_docker.sh
+  ```
+- **Résultat** : tshark 4.4.19 ; `b6g-plat` et `b6g-intel` résolus vers 127.0.0.1. `make env-check` : bloc INT0 entièrement
+  OK, matériel conforme au plan § 4.2, SCTP chargé, horloge synchronisée (NTP), Prometheus / Grafana / Actionneur /
+  registre joignables ; restent indicatifs k3d, kubectl, Helm (atelier 8). `make vm-check` : VT-x, `/dev/kvm`,
+  QEMU 10.0.13, libvirt 11.3.0, virt-install 5.0.0, xorriso, groupes `libvirt` et `kvm`, `virsh` sans sudo.
+- **Vérification** : sorties des trois commandes ; `getent hosts b6g-plat`.
+- **Problèmes et solutions** :
+  - `make check` signalait `tc` absent et SCTP « non vérifiable » : `/usr/sbin` hors du `PATH` utilisateur et
+    `modinfo` introuvable. Correction : recherche des outils aussi dans `/usr/sbin` et `/sbin`, lecture de `/proc/modules`.
+  - `cloud-image-utils` (cloud-localds) absent : l'image de démarrage cloud-init de l'atelier 7 sera construite avec
+    `xorriso`, déjà installé.
+  - Réseau libvirt `default` inactif : à démarrer à l'atelier 7 (`virsh -c qemu:///system net-start default`).
+- **Retour arrière** : `sudo apt remove tshark` ; retirer la ligne `b6g-plat b6g-intel` de `/etc/hosts`.
+
+### 2026-11-21 — Captures de signalisation de l'atelier 3 (T03.3)
+
+- **Objectif** : observer NGAP, NAS-5GS, SBI, PFCP et GTP-U sans installer d'outil de capture dans les conteneurs.
+- **Commandes** : conteneurs `tcpdump` (image `gradiant/open5gs:2.7.7`, qui contient tcpdump) attachés à l'espace
+  réseau de chaque fonction (`--net container:<nf>`), puis `docker cp` des fichiers et décodage
+  `ateliers/a03/decode_captures.py` (procédure complète : `ateliers/a03/README.md` § E08).
+- **Résultat** : 4 captures (600 Ko) dans `~/b6g-data/a03/pcap/` (hors dépôt) ; séquence complète d'un UE en 50,5 ms.
+- **Problèmes et solutions** :
+  - Premier essai perdu : conteneurs de capture lancés avec `--rm`, supprimés avec leur fichier à l'arrêt de tcpdump.
+    Correction : conteneurs persistants, `docker stop`, `docker cp`, puis `docker rm`.
+  - Messages NAS vides après « Security mode » : intégrité active, chiffrement nul (NEA0). Correction : option
+    tshark `nas-5gs.null_decipher:TRUE`.
+  - SBI non décodé : port 7777 non standard. Correction : `-d tcp.port==7777,http2`.
+  - Plusieurs UEs regroupés dans une même trame SCTP : décodage PDU par PDU (sortie PDML) pour attribuer chaque
+    message NGAP à son RAN-UE-NGAP-ID.
+- **Retour arrière** : sans objet (lecture seule) ; `rm -r ~/b6g-data/a03/pcap` pour libérer l'espace.
