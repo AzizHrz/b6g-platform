@@ -1,0 +1,62 @@
+# Pile d'observabilité (M03, W1.3). Prometheus lit les NF Open5GS sur le réseau b6g-core,
+# l'Actionneur sur l'hôte (host-gateway) et les sondes trafficgen via la Pushgateway.
+name: b6g-obs
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./rules:/etc/prometheus/rules:ro
+      - ./generated/targets:/etc/prometheus/targets:ro
+      - b6g-prometheus:/prometheus
+    ports: ["9090:9090"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [b6g-core, b6g-obs]
+    restart: unless-stopped
+  pushgateway:
+    image: prom/pushgateway:v1.11.1
+    container_name: pushgateway
+    ports: ["9091:9091"]
+    networks: [b6g-obs]
+    restart: unless-stopped
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    container_name: cadvisor
+    privileged: true
+    devices: ["/dev/kmsg"]
+    command: ["--docker_only=true", "--housekeeping_interval=5s", "--store_container_labels=true"]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks: [b6g-obs]
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:10.4.19
+    container_name: grafana
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - b6g-grafana:/var/lib/grafana
+    ports: ["3000:3000"]
+    networks: [b6g-obs]
+    restart: unless-stopped
+networks:
+  b6g-core:
+    external: true
+  b6g-obs:
+    name: b6g-obs
+volumes:
+  b6g-prometheus: {}
+  b6g-grafana: {}

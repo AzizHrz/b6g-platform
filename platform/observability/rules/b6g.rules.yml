@@ -1,0 +1,28 @@
+# Règles d'enregistrement I-02 : noms natifs (Open5GS, cAdvisor, Actionneur) -> noms b6g_*.
+# Les consommateurs n'interrogent que les noms b6g_* (plan maître § 6.4).
+# Publiées directement, sans règle : b6g_slice_bw_limit_mbps, b6g_link_delay_ms, b6g_actions_total (Actionneur),
+# b6g_slice_latency_ms, b6g_slice_loss_ratio (sondes trafficgen -> Pushgateway).
+groups:
+  - name: b6g-int1
+    interval: 5s
+    rules:
+      # UEs enregistrés (AMF), toutes slices confondues
+      - record: b6g_ue_registered
+        expr: sum(fivegs_amffunction_rm_registeredsubnbr{job="open5gs"})
+      # Sessions PDU actives par slice (SMF de la slice)
+      - record: b6g_slice_sessions
+        expr: sum by (slice) (ues_active{job="open5gs", nf=~"smf-.+"})
+      # Débit par slice et par sens, à partir des compteurs d'octets de ogstun exposés par l'Actionneur
+      - record: b6g_slice_throughput_mbps
+        expr: sum by (slice, direction) (rate(b6g_slice_tun_bytes_total{job="actuator"}[15s])) * 8 / 1e6
+      # CPU (fraction d'un cœur) et mémoire de chaque fonction réseau, d'après cAdvisor
+      - record: b6g_nf_cpu_ratio
+        expr: >-
+          sum by (nf) (label_replace(
+            rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_project="b6g-core",
+                 name!~"ue-.+|mongo|iperf"}[30s]), "nf", "$1", "name", "(.+)"))
+      - record: b6g_nf_memory_bytes
+        expr: >-
+          sum by (nf) (label_replace(
+            container_memory_working_set_bytes{container_label_com_docker_compose_project="b6g-core",
+                 name!~"ue-.+|mongo|iperf"}, "nf", "$1", "name", "(.+)"))

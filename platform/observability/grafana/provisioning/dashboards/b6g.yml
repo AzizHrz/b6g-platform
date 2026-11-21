@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: b6g
+    folder: B6G
+    type: file
+    options: {path: /var/lib/grafana/dashboards}
