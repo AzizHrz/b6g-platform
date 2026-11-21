@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: APP
+  labels: {app: APP}
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  selector: {app: APP}
+  ports:
+    - {name: http, port: 8080, targetPort: http, nodePort: 30099}

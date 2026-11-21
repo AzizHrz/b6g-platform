@@ -1,0 +1,2 @@
+ts,niveau,noeud,delai_ajoute_ms,cpu_millicores_niveau,requetes,echecs,rtt_p50_ms,rtt_p95_ms,rtt_moyen_ms,deplacement_s,action
+2026-11-21T19:00:28.300Z,cloud,k3d-b6g-agent-2,40,8000,1000,0,85.27,87.08,85.02,0.1,96d6e2f3-23b8-4549-b8fe-41e1b43294fa

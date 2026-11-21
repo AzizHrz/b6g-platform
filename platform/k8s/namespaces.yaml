@@ -1,0 +1,16 @@
+# Espaces de noms des applications (plan maître § 6.12) : un par niveau, plus b6g-core
+apiVersion: v1
+kind: Namespace
+metadata: {name: b6g-edge, labels: {b6g/tier: edge}}
+---
+apiVersion: v1
+kind: Namespace
+metadata: {name: b6g-fog, labels: {b6g/tier: fog}}
+---
+apiVersion: v1
+kind: Namespace
+metadata: {name: b6g-cloud, labels: {b6g/tier: cloud}}
+---
+apiVersion: v1
+kind: Namespace
+metadata: {name: b6g-core}

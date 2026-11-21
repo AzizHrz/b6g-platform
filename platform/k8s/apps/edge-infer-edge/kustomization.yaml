@@ -1,0 +1,45 @@
+# b6g-edge-infer (version de remplacement MAQUETTE) au niveau edge : copie du gabarit I-11, seuls params.env et namespace modifiés
+# Utilisation : kubectl apply -k platform/k8s/apps/edge-infer-edge
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: b6g-edge
+resources: [deployment.yaml, service.yaml, hpa.yaml]
+configMapGenerator:
+  - name: b6g-template-params
+    envs: [params.env]
+    options: {disableNameSuffixHash: true}
+replacements:
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.app}
+    targets:
+      - select: {kind: Deployment}
+        fieldPaths: [metadata.name, metadata.labels.app, spec.selector.matchLabels.app, spec.template.metadata.labels.app]
+      - select: {kind: Service}
+        fieldPaths: [metadata.name, metadata.labels.app, spec.selector.app]
+      - select: {kind: HorizontalPodAutoscaler}
+        fieldPaths: [metadata.name, spec.scaleTargetRef.name]
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.image}
+    targets:
+      - select: {kind: Deployment}
+        fieldPaths: [spec.template.spec.containers.0.image]
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.tier}
+    targets:
+      - select: {kind: Deployment}
+        fieldPaths: [metadata.labels.b6g/tier, spec.template.metadata.labels.b6g/tier,
+                     spec.template.spec.nodeSelector.b6g/tier, spec.template.spec.containers.0.env.0.value]
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.port}
+    targets:
+      - select: {kind: Deployment}
+        fieldPaths: [spec.template.spec.containers.0.ports.0.containerPort,
+                     spec.template.spec.containers.0.env.1.value, spec.template.metadata.annotations.prometheus\.io/port]
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.node_port}
+    targets:
+      - select: {kind: Service}
+        fieldPaths: [spec.ports.0.nodePort]
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.cpu_request}
+    targets:
+      - select: {kind: Deployment}
+        fieldPaths: [spec.template.spec.containers.0.resources.requests.cpu]
+  - source: {kind: ConfigMap, name: b6g-template-params, fieldPath: data.memory_request}
+    targets:
+      - select: {kind: Deployment}
+        fieldPaths: [spec.template.spec.containers.0.resources.requests.memory]

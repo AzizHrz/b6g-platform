@@ -33,3 +33,4 @@ ueransim-gnb-chart      0.2.6           A08              2026-11-21
 kube-state-metrics      5.25.1 (chart)  A08              2026-11-21
 ubuntu-cloud-image      22.04 (jammy)   5                2026-11-21
 open5gs-upf-vm          2.8.0           A07              2026-11-21   # PPA open5gs/latest
+b6g-actuator            2.0.0           INT3             2026-11-21

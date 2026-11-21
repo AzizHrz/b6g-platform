@@ -360,3 +360,34 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
     (pont interne, deux interfaces tap, QMP), disque partagé.
 - **Retour arrière** : `virsh -c qemu:///system destroy upf-miot-vm && virsh -c qemu:///system undefine upf-miot-vm`,
   `virsh -c qemu:///system pool-destroy b6g`, `docker start upf-miot`.
+
+### 2026-11-21 — Actionneur v2, niveaux Edge / Fog / Cloud et jalon INT3
+
+- **Objectif** : actions v2 sur la plateforme réelle, délais des niveaux (atelier 10), gabarit I-11, edge-infer, INT3.
+- **Commandes** :
+  ```bash
+  make stop-actuator up-actuator                  # Actionneur 2.0.0 (backend tc)
+  make k8s-connect k8s-namespaces                 # UPF reliées au réseau k3d-b6g ; b6g-edge, b6g-fog, b6g-cloud, b6g-core
+  docker build -t 127.0.0.1:5000/b6g/edge-infer:stub platform/apps/edge-infer-stub && docker push 127.0.0.1:5000/b6g/edge-infer:stub
+  kubectl apply -k platform/k8s/apps/edge-infer-edge ; kubectl apply -k platform/k8s/apps/edge-infer-cloud
+  make k8s-team2-kubeconfig                       # platform/k8s/generated/kubeconfig-equipe2 (hors Git)
+  .venv/bin/python ateliers/a10/run_a10.py
+  .venv/bin/pytest -m int tests/integration/test_int3.py
+  ```
+- **Résultat** : délais des niveaux vérifiés par ping (2,6 / 12,2 / 40,1 ms) ; RTT applicatif p50 6,3 / 24,0 / 85,3 ms
+  (Edge / Fog / Cloud) ; INT3 : 12 réussis, 1 ignoré ; INT1 toujours conforme (16 réussis).
+- **Vérification** : `kubectl --kubeconfig platform/k8s/generated/kubeconfig-equipe2 auth can-i create deployments -n b6g-edge`
+  → yes ; `-n b6g-5gc` → no.
+- **Problèmes et solutions** :
+  - L'image k3s n'a ni `tc` ni `ip` : netem des niveaux appliqué par un conteneur d'appoint (image Open5GS) partageant
+    l'espace réseau du nœud (`docker run --net container:<nœud>`).
+  - Le policer montant v1 occupait la priorité 1, réservée aux filtres d'isolement des UEs : déplacé en priorité 100,
+    ancien filtre supprimé une fois sur chaque UPF.
+  - Requête NodePort servie via un autre nœud (délai d'un autre niveau) : `externalTrafficPolicy: Local`.
+  - Sonde de disponibilité du gabarit sur `/health`, contrat edge-infer sur `/v1/health` : la version de remplacement
+    répond aux deux chemins.
+  - matplotlib 3.11 : paramètre `labels` de `boxplot` renommé `tick_labels`.
+  - Juste après `test_int3` (arrêt et reprise de la slice miot), `test_int1` voit 9 sessions miot sur 10 (moyenne sur
+    30 s) : relancer INT1 après 30 s (16 réussis).
+- **Retour arrière** : actions inverses par l'Actionneur ; `kubectl delete -k platform/k8s/apps/edge-infer-edge` ;
+  `docker network disconnect k3d-b6g upf-<slice>`.

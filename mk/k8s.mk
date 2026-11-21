@@ -54,3 +54,17 @@ k8s-core-status:
 
 k8s-core-down:
 	-helm -n b6g-5gc uninstall ueransim-gnb open5gs
+
+# Raccorde les UPF au réseau du cluster (atelier 10) : trafic des UEs -> nœuds k3d par la sortie N6 de chaque UPF
+.PHONY: k8s-connect
+k8s-connect:
+	@for s in upf-embb upf-v2x upf-miot; do docker network connect k3d-b6g $$s 2>/dev/null && echo "$$s raccordée" || echo "$$s déjà raccordée"; done
+
+# Espaces de noms des applications et kubeconfig restreint de l'équipe 2 (hors Git : platform/k8s/generated/)
+B6G_K8S_SERVER ?= https://b6g-plat:6443
+.PHONY: k8s-namespaces k8s-team2-kubeconfig
+k8s-namespaces:
+	kubectl apply -f platform/k8s/namespaces.yaml
+
+k8s-team2-kubeconfig:
+	$(BIN)/python platform/k8s/team2_kubeconfig.py --server $(B6G_K8S_SERVER)
