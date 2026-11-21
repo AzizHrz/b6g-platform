@@ -15,7 +15,7 @@ def write_measures(rows: list[dict], path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     kept = [r for r in rows if r.get("value") is not None]
     with path.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=MEASURE_COLUMNS, extrasaction="ignore")
+        w = csv.DictWriter(f, fieldnames=MEASURE_COLUMNS, extrasaction="ignore", lineterminator="\n")
         w.writeheader()
         w.writerows(kept)
     return path
@@ -24,7 +24,7 @@ def write_measures(rows: list[dict], path: Path) -> Path:
 def write_csv(rows: list[dict], path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()), lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return path
