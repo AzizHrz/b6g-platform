@@ -1,0 +1,11 @@
+# Registre d'images local (T01.5, I-12) : b6g-plat:5000/<image>:<version>
+name: b6g-registry
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    ports: ["5000:5000"]
+    volumes: [b6g-registry:/var/lib/registry]
+    restart: unless-stopped
+volumes:
+  b6g-registry: {}
