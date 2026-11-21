@@ -24,3 +24,12 @@ up-actuator:
 
 stop-actuator:
 	@[ -f .run/actuator.pid ] && kill $$(cat .run/actuator.pid) 2>/dev/null; rm -f .run/actuator.pid; echo "Actionneur arrêté"
+
+# Export du jeu D1 kpi_timeseries depuis Prometheus (W1.4) : make export-d1 RUN_ID=campagne-01 SINCE=30m
+RUN_ID ?= $(shell date -u +%Y%m%dT%H%M%S)
+SINCE ?= 30m
+FORMAT ?= csv
+.PHONY: export-d1
+export-d1:
+	$(BIN)/python tools/prom_export.py --run-id $(RUN_ID) --since $(SINCE) --format $(FORMAT)
+	$(BIN)/python tools/validate_dataset.py datasets/raw/kpi_timeseries-$(RUN_ID).manifest.yaml

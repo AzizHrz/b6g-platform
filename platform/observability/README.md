@@ -37,3 +37,20 @@ make down-obs
   n'est pas reconnu par cAdvisor 0.49 (aucun conteneur identifié).
 - **Pare-feu UFW** : Prometheus joint l'Actionneur sur l'hôte (`host.docker.internal:8081`). Avec UFW actif,
   autoriser les réseaux Docker vers ce port (voir `docs/setup/SETUP_LOG.md`).
+
+## Export du jeu D1 `kpi_timeseries` (W1.4, I-09)
+
+`tools/prom_export.py` lit les noms `b6g_*` dans Prometheus (`query_range`, pas de 5 s) et produit une ligne par
+(instant, slice) avec les colonnes du contrat D1 : `ts, run_id, slice, throughput_mbps, latency_ms_p50,
+latency_ms_p95, loss_ratio, bw_limit_mbps, sessions, upf_cpu_ratio, upf_memory_bytes`. Une valeur absente reste vide
+(null). Le fichier (CSV ou Parquet) et son manifeste vont dans `datasets/raw/` (hors Git) ; le manifeste porte la
+source, l'intervalle, le nombre de lignes, l'empreinte SHA-256 et le réalisme (ÉMULÉ par défaut).
+
+```bash
+make export-d1 RUN_ID=campagne-01 SINCE=2h               # CSV + contrôle CT-08 (tools/validate_dataset.py)
+make export-d1 RUN_ID=campagne-01 SINCE=2h FORMAT=parquet
+.venv/bin/python tools/prom_export.py --run-id essai --start 2026-11-21T15:00:00Z --end 2026-11-21T15:30:00Z
+```
+
+Premier export réel (2026-11-21, 3 h de mesures des ateliers 3, 4 et 6) : 6 483 lignes, contrôle CT-08 conforme,
+2 valeurs de latence absentes (laissées vides). Tests sans plateforme : `tests/unit/test_prom_export.py`.
