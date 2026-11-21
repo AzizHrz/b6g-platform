@@ -1,0 +1,34 @@
+t_ms,interface,protocole,message,capture
+0.0,N2,NGAP,InitialUEMessage,amf
+0.0,N1,NAS-5GS,Registration request,amf
+12.822,N2,NGAP,DownlinkNASTransport,amf
+12.822,N1,NAS-5GS,Authentication request,amf
+24.786,N2,NGAP,UplinkNASTransport,amf
+24.786,N1,NAS-5GS,Authentication response,amf
+28.354,N2,NGAP,DownlinkNASTransport,amf
+28.354,N1,NAS-5GS,Security mode command,amf
+29.636,N2,NGAP,UplinkNASTransport,amf
+29.636,N1,NAS-5GS,Security mode complete,amf
+29.636,N1,NAS-5GS,Registration request,amf
+31.517,SBI,HTTP/2,GET /nudm-sdm/v2/imsi-001010000000020/am-data,amf
+35.462,SBI,HTTP/2,GET /nudm-sdm/v2/imsi-001010000000020/smf-select-data,amf
+36.321,SBI,HTTP/2,GET /nudm-sdm/v2/imsi-001010000000020/ue-context-in-smf-data,amf
+39.083,N2,NGAP,InitialContextSetup,amf
+39.083,N1,NAS-5GS,Registration accept,amf
+39.307,N2,NGAP,InitialContextSetup (Response),amf
+43.128,N2,NGAP,UplinkNASTransport,amf
+43.128,N1,NAS-5GS,Registration complete,amf
+43.128,N2,NGAP,UplinkNASTransport,amf
+43.128,N1,NAS-5GS,UL NAS transport,amf
+43.128,N1,NAS-5GS,PDU session establishment request,amf
+43.216,N2,NGAP,DownlinkNASTransport,amf
+43.216,N1,NAS-5GS,Configuration update command,amf
+48.471,N4,PFCP,PFCP Session Establishment Request (UE 10.46.1.52),smf-v2x
+48.779,N4,PFCP,PFCP Session Establishment Response,smf-v2x
+49.15,SBI,HTTP/2,POST /namf-comm/v1/ue-contexts/imsi-001010000000020/n1-n2-messages,amf
+49.491,N2,NGAP,PDUSessionResourceSetup,amf
+49.491,N1,NAS-5GS,DL NAS transport,amf
+49.491,N1,NAS-5GS,PDU session establishment accept,amf
+50.517,N2,NGAP,PDUSessionResourceSetup (Response),amf
+5430.845,N3,GTP-U,"TEID 0x00003c21 : Echo (ping) request  id=0x0f6d, seq=1/256, ttl=64 (UE de uesimtun0)",upf-v2x
+5470.37,N3,GTP-U,"TEID 0x0000008d : Echo (ping) reply    id=0x0f6d, seq=1/256, ttl=116 (request in 135) (UE de uesimtun0)",upf-v2x

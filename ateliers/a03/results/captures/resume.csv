@@ -1,0 +1,55 @@
+capture,protocole,message,nombre
+amf,NGAP/NAS,Authentication request,10
+amf,NGAP/NAS,Authentication response,10
+amf,NGAP/NAS,Configuration update command,10
+amf,NGAP/NAS,DATA[107],1
+amf,NGAP/NAS,DATA[109],1
+amf,NGAP/NAS,DATA[111],1
+amf,NGAP/NAS,DATA[113],1
+amf,NGAP/NAS,DATA[115],1
+amf,NGAP/NAS,DATA[117],1
+amf,NGAP/NAS,DATA[119],1
+amf,NGAP/NAS,DATA[21],1
+amf,NGAP/NAS,DATA[23],1
+amf,NGAP/NAS,DATA[25],1
+amf,NGAP/NAS,DATA[27],1
+amf,NGAP/NAS,DATA[29],1
+amf,NGAP/NAS,DATA[31],1
+amf,NGAP/NAS,DATA[33],1
+amf,NGAP/NAS,DATA[35],1
+amf,NGAP/NAS,DATA[37],1
+amf,NGAP/NAS,DATA[39],1
+amf,NGAP/NAS,DATA[73],1
+amf,NGAP/NAS,DATA[75],1
+amf,NGAP/NAS,DATA[77],1
+amf,NGAP/NAS,DL NAS transport,10
+amf,NGAP/NAS,DownlinkNASTransport,30
+amf,NGAP/NAS,InitialContextSetupRequest,10
+amf,NGAP/NAS,InitialContextSetupResponse,10
+amf,NGAP/NAS,InitialUEMessage,10
+amf,NGAP/NAS,JSON (application/json),20
+amf,NGAP/NAS,PDU session establishment accept,20
+amf,NGAP/NAS,PDU session establishment request,10
+amf,NGAP/NAS,PDUSessionResourceSetupRequest,10
+amf,NGAP/NAS,PDUSessionResourceSetupRequestTransfer,10
+amf,NGAP/NAS,PDUSessionResourceSetupResponse,10
+amf,NGAP/NAS,PDUSessionResourceSetupResponseTransfer,10
+amf,NGAP/NAS,Registration accept,10
+amf,NGAP/NAS,Registration complete,10
+amf,NGAP/NAS,Registration request,20
+amf,NGAP/NAS,Security mode command,10
+amf,NGAP/NAS,Security mode complete,10
+amf,NGAP/NAS,UEContextReleaseCommand,10
+amf,NGAP/NAS,UEContextReleaseComplete,10
+amf,NGAP/NAS,UL NAS transport,10
+amf,NGAP/NAS,UplinkNASTransport,40
+gnb,GTP,G-PDU (données utilisateur),130
+smf-v2x,PFCP,Heartbeat Request,2
+smf-v2x,PFCP,Heartbeat Response,2
+smf-v2x,PFCP,Session Deletion Request,10
+smf-v2x,PFCP,Session Deletion Response,10
+smf-v2x,PFCP,Session Establishment Request,10
+smf-v2x,PFCP,Session Establishment Response,10
+smf-v2x,PFCP,Session Modification Request,10
+smf-v2x,PFCP,Session Modification Response,10
+upf-v2x,GTP,G-PDU (données utilisateur),48
