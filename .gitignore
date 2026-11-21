@@ -67,6 +67,7 @@ van3twin/
 platform/core/generated/
 platform/ran/generated/
 platform/observability/generated/
+platform/k8s/generated/
 
 # Secrets et identités
 .env

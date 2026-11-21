@@ -10,10 +10,6 @@ open5gs                 2.7.7           INT1             2026-11-21
 ueransim                3.2.8           INT1             2026-11-21
 prometheus              2.55.1          INT1             2026-11-21
 grafana                 10.4.19         INT1             2026-11-21
-k3d                     à compléter     4
-k3s                     à compléter     4
-kubectl                 à compléter     4
-helm                    à compléter     4
 qemu                    10.0.13         5                2026-11-21
 libvirt                 11.3.0          5                2026-11-21
 fabric                  à compléter     6
@@ -28,3 +24,12 @@ registry                2               2                2026-11-21
 matplotlib              3.11.2          A04/A06          2026-11-21
 tshark                  4.4.19          3                2026-11-21
 virt-install            5.0.0           5                2026-11-21
+k3d                     5.7.4           4                2026-11-21
+k3s                     1.30.4          4                2026-11-21
+kubectl                 1.30.6          4                2026-11-21
+helm                    3.16.2          4                2026-11-21
+open5gs-chart           2.2.5           A08              2026-11-21   # Open5GS 2.7.2 dans k3d
+ueransim-gnb-chart      0.2.6           A08              2026-11-21
+kube-state-metrics      5.25.1 (chart)  A08              2026-11-21
+ubuntu-cloud-image      22.04 (jammy)   5                2026-11-21
+open5gs-upf-vm          2.8.0           A07              2026-11-21   # PPA open5gs/latest

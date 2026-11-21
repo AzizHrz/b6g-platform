@@ -279,3 +279,84 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
   - Plusieurs UEs regroupés dans une même trame SCTP : décodage PDU par PDU (sortie PDML) pour attribuer chaque
     message NGAP à son RAN-UE-NGAP-ID.
 - **Retour arrière** : sans objet (lecture seule) ; `rm -r ~/b6g-data/a03/pcap` pour libérer l'espace.
+
+### 2026-11-21 — Kubernetes léger : k3d, kubectl, Helm et cluster b6g (étape 4 du guide, T08.2)
+
+- **Objectif** : cluster à trois niveaux pour les ateliers 8, 10 et 12 (INT3).
+- **Machine** : Debian 13.7, Docker 29.9.3 ; outils installés sans droits administrateur dans `~/b6g-ext/bin`.
+- **Commandes** :
+  ```bash
+  curl -fsSLo k3d https://github.com/k3d-io/k3d/releases/download/v5.7.4/k3d-linux-amd64      # + checksums.txt
+  curl -fsSLo kubectl https://dl.k8s.io/release/v1.30.6/bin/linux/amd64/kubectl               # + kubectl.sha256
+  curl -fsSLo helm.tgz https://get.helm.sh/helm-v3.16.2-linux-amd64.tar.gz                    # + .sha256sum
+  install -m 0755 k3d kubectl linux-amd64/helm ~/b6g-ext/bin/
+  make up-k8s                                   # platform/k8s/cluster.yaml
+  ```
+- **Résultat** : k3d 5.7.4, k3s v1.30.4, kubectl 1.30.6, Helm 3.16.2 (sommes SHA-256 vérifiées). Cluster `b6g` :
+  1 serveur, 3 agents étiquetés `b6g/tier=edge|fog|cloud`, API sur 6443, registre `b6g-plat:5000` relayé vers le
+  registre local ; nœuds prêts en 15 s.
+- **Vérification** : `kubectl get nodes -L b6g/tier` ; image `b6g-plat:5000/b6g/echo-app:0.1.0` tirée par le cluster.
+- **Problèmes et solutions** : somme de contrôle k3d d'abord non trouvée : le fichier `checksums.txt` préfixe les noms par
+  `_dist/` ; comparaison manuelle conforme.
+- **Retour arrière** : `make down-k8s` ; `rm ~/b6g-ext/bin/{k3d,kubectl,helm}`.
+
+### 2026-11-21 — Cœur Open5GS dans k3d par Helm (T08.2)
+
+- **Objectif** : un UE s'enregistre sur le cœur déployé dans Kubernetes.
+- **Commandes** : `make k8s-core` (charts Gradiant `open5gs` 2.2.5 et `ueransim-gnb` 0.2.6, valeurs générées par
+  `platform/k8s/values/render.py` depuis le scénario, espace de noms `b6g-5gc`).
+- **Résultat** : 13 fonctions 5G, UE 001010000000001 enregistré, session PDU, RTT 2,1 ms vers l'UPF, 36 ms vers Internet.
+- **Problèmes et solutions** :
+  - MongoDB `ImagePullBackOff` : `bitnami/mongodb:5.0.10-debian-11-r3` retiré de docker.io/bitnami (2025) ; même version
+    depuis `bitnamilegacy/mongodb`.
+  - UPF `Init:CrashLoopBackOff` (« Net device already exists ») : clé `dev: ogstun` ajoutée dans `subnetList`.
+  - Fonctions 4G déployées par défaut : désactivées (`hss`, `mme`, `pcrf`, `sgwc`, `sgwu`).
+  - Enregistrement rejeté (cause 95) ; SCP : « No SEPP », « NF-Discover failed [400] ». Cause : NRF sur le PLMN par
+    défaut du chart (999/70), UE traité comme itinérant. Correction : `nrf.config.servingList` = 001/01, redémarrage
+    des fonctions (`kubectl rollout restart`).
+  - Tunnel de l'UE inutilisable après redémarrage simultané du gNB et des UEs (attachement à l'ancien pod gNB) :
+    redémarrage de l'UE seul.
+  - `pkill -f 'helm upgrade …'` a arrêté son propre shell (code 144) : commande abandonnée.
+- **Retour arrière** : `make k8s-core-down` ; `kubectl delete namespace b6g-5gc`.
+
+### 2026-11-21 — Observabilité du cluster (T08.3) et auto-scaling (T08.4)
+
+- **Commandes** : `make k8s-obs` (kube-state-metrics 5.25.1 par Helm, compte `prometheus-b6g` en lecture seule, jeton
+  dans `platform/observability/generated/k8s-token`, Prometheus relié au réseau `k3d-b6g`) ;
+  `kubectl apply -k platform/k8s/apps/echo-app` ; `.venv/bin/python ateliers/a08/run_a08.py`.
+- **Résultat** : toutes les cibles Prometheus `up` (dont `k8s-cadvisor`, `kube-state-metrics`, `k8s-pods`) ;
+  `b6g_k8s_replicas`, `b6g_app_request_latency_ms` et CPU des niveaux publiés ; CPU et mémoire de 16 pods dans Grafana.
+- **Problèmes et solutions** :
+  - Collecte k8s ajoutée sans casser INT1 quand le cluster est arrêté : fichiers de collecte optionnels
+    (`scrape_config_files`, Prometheus ≥ 2.43) générés seulement par `make k8s-obs` ; montage du dossier `generated/`
+    complet dans Prometheus (recréation du conteneur, données conservées).
+  - Premier essai d'HPA avec une requête CPU de 100m : 10 répliques dès 2 clients. Requête portée à 200m, limite 1 cœur,
+    charge avec pause de 200 ms par client.
+- **Retour arrière** : `make k8s-obs-off` ; `helm -n kube-system uninstall kube-state-metrics`.
+
+### 2026-11-21 — UPF miot en machine virtuelle KVM (T07.2) et laboratoire de migration (T07.4)
+
+- **Objectif** : remplacer le conteneur `upf-miot` par une VM, même adresse N4 / N3 ; migration à chaud mesurée.
+- **Commandes** :
+  ```bash
+  curl -fsSLo ~/b6g-data/vm/jammy-server-cloudimg-amd64.img https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+  grep ' \*jammy-server-cloudimg-amd64.img$' SHA256SUMS | sed 's/\*//' | sha256sum -c -
+  docker stop upf-miot
+  .venv/bin/python platform/vm/upf-vm/build.py --vcpus 1          # pool libvirt b6g, cloud-init, virt-install
+  docker build -t b6g/qemu-lab:0.1.0 platform/vm/qemu-lab
+  ```
+- **Résultat** : image Ubuntu 22.04 vérifiée (681 Mo) ; VM `upf-miot-vm` (1 vCPU, 1 Gio) raccordée au pont Docker
+  `b6g-core`, Open5GS UPF 2.8.0 (PPA officiel) prête en moins de 2 min, association PFCP avec `smf-miot` (2.7.7),
+  10 UEs miot à travers la VM (RTT 1,3 ms vers la passerelle, 47 ms vers Internet). Image du laboratoire QEMU : 320 Mo.
+- **Problèmes et solutions** :
+  - Dossier personnel en `drwx------` : l'utilisateur `libvirt-qemu` ne lit pas les disques placés dans `~`. Au lieu de
+    modifier ces droits, pool libvirt `b6g` dans `/var/lib/libvirt/images/b6g`, géré par libvirtd (groupe libvirt).
+  - Pool créé mais non démarré : test d'état erroné (« inactive » contient « active ») ; comparaison exacte à `running`.
+  - Conflit d'adresse 172.22.0.43 entre la VM et le conteneur `upf-miot` : conteneur arrêté pendant l'atelier 7.
+  - `cloud-image-utils` absent : disque cloud-init construit par `xorriso`.
+  - Version : le PPA fournit Open5GS 2.8.0 (conteneurs en 2.7.7) ; PFCP compatible, sessions établies.
+  - Ajout de vCPU à chaud (`setvcpus --live`) sans effet dans l'invité (`nproc` = 1) : changement à froid.
+  - Migration à chaud refusée par libvirt vers le même hôte : deux hyperviseurs QEMU dans un conteneur privilégié
+    (pont interne, deux interfaces tap, QMP), disque partagé.
+- **Retour arrière** : `virsh -c qemu:///system destroy upf-miot-vm && virsh -c qemu:///system undefine upf-miot-vm`,
+  `virsh -c qemu:///system pool-destroy b6g`, `docker start upf-miot`.
