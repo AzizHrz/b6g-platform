@@ -1,0 +1,14 @@
+{
+  "name": "b6g-ledger-gateway",
+  "version": "1.0.0",
+  "description": "Passerelle REST I-07 du registre B6G au-dessus d'Hyperledger Fabric",
+  "main": "server.js",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {"node": ">=20"},
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.0",
+    "@hyperledger/fabric-gateway": "^1.7.0",
+    "@hyperledger/fabric-protos": "^0.2.2"
+  }
+}

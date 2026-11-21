@@ -7,7 +7,9 @@
 from __future__ import annotations
 
 import copy
+import json
 import os
+import threading
 import uuid
 from collections import Counter
 
@@ -66,6 +68,9 @@ def create_app(sc: dict | None = None, backend: str | None = None, ledger_url: s
         app.state.setup_error = str(e)
     app.state.ledger_url = ledger_url if ledger_url is not None else os.environ.get("B6G_LEDGER_URL")
     app.state.outbox: list[dict] = []          # événements non encore remis au registre
+    app.state.outbox_lock = threading.Lock()
+    app.state.outbox_ready = threading.Event()
+    app.state.delivered = 0
     app.state.counter: Counter = Counter()     # b6g_actions_total{type,status}
 
     def emit(action: dict, result: dict, caller: str) -> None:
@@ -76,17 +81,36 @@ def create_app(sc: dict | None = None, backend: str | None = None, ledger_url: s
         if action["type"] in EVENT_TYPE:
             evts.append(events.make("actuator", EVENT_TYPE[action["type"]],
                                     {"target": action["target"], **action["params"]}))
-        for e in evts:
-            delivered = False
-            if app.state.ledger_url:
+        # Remise asynchrone (plan maître § 6.6) : file locale vidée par un fil dédié, l'action n'attend pas le registre
+        with app.state.outbox_lock:
+            app.state.outbox.extend(evts)
+        app.state.outbox_ready.set()
+
+    def deliver_loop() -> None:
+        """Vide la file vers le registre ; un événement non remis reste en tête et est retenté (registre indisponible)."""
+        while True:
+            app.state.outbox_ready.wait(timeout=5)
+            app.state.outbox_ready.clear()
+            while app.state.ledger_url:
+                with app.state.outbox_lock:
+                    if not app.state.outbox:
+                        break
+                    e = app.state.outbox[0]
                 try:
-                    r = httpx.post(f"{app.state.ledger_url.rstrip('/')}/v1/events", json=e,
-                                   headers={"X-B6G-Caller": "actuator"}, timeout=5)
-                    delivered = r.status_code == 200
+                    r = httpx.post(f"{app.state.ledger_url.rstrip('/')}/v1/events",
+                                   content=json.dumps(e, ensure_ascii=False).encode(),
+                                   headers={"X-B6G-Caller": "actuator", "Content-Type": "application/json"}, timeout=30)
+                    ok = r.status_code in (200, 409)          # 409 : déjà inscrit (nouvel essai après coupure)
                 except httpx.HTTPError:
-                    delivered = False
-            if not delivered:
-                app.state.outbox.append(e)
+                    ok = False
+                if not ok:
+                    break
+                with app.state.outbox_lock:
+                    app.state.outbox.pop(0)
+                    app.state.delivered += 1
+
+    if app.state.ledger_url:
+        threading.Thread(target=deliver_loop, daemon=True, name="ledger-outbox").start()
 
     def run(action: dict, dry_run: bool, caller: str) -> dict:
         bw = {k: {"rate_mbps": v["rate_mbps"], "ceil_mbps": v["ceil_mbps"]} for k, v in app.state.state["slices"].items()}
@@ -169,6 +193,9 @@ def create_app(sc: dict | None = None, backend: str | None = None, ledger_url: s
         for lk, v in app.state.state["links"].items():
             lines.append(f'b6g_link_delay_ms{{link="{lk}"}} {v["delay_ms"]}')
         lines.extend(app.state.backend.metrics())
+        # Suivi de la remise au registre I-07 (métriques internes, hors contrat I-02)
+        lines += ["# TYPE actuator_ledger_outbox_events gauge", f"actuator_ledger_outbox_events {len(app.state.outbox)}",
+                  "# TYPE actuator_ledger_delivered_total counter", f"actuator_ledger_delivered_total {app.state.delivered}"]
         return "\n".join(lines) + "\n"
 
     return app

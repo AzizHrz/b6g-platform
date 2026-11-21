@@ -391,3 +391,54 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
     30 s) : relancer INT1 après 30 s (16 réussis).
 - **Retour arrière** : actions inverses par l'Actionneur ; `kubectl delete -k platform/k8s/apps/edge-infer-edge` ;
   `docker network disconnect k3d-b6g upf-<slice>`.
+
+### 2026-11-21 — Registre Hyperledger Fabric (étape 6 du guide, atelier 21) et jalon INT4
+
+- **Objectif** : registre réel pour les événements de la plateforme (I-07), endossé par deux organisations ; INT4.
+- **Machine** : Debian 13.7, Docker 29.9.3. Fabric installé hors dépôt dans ~/b6g-ext/fabric.
+- **Commandes** :
+  ```bash
+  git clone --depth 1 https://github.com/hyperledger/fabric-samples.git ~/b6g-ext/fabric/fabric-samples
+  # binaires officiels Fabric 2.5.16 et CA 1.5.17 (releases GitHub), images hyperledger/* 2.5.16 et ca 1.5.17
+  make up-ledger
+  B6G_LEDGER_URL=http://127.0.0.1:8082 make up-actuator
+  .venv/bin/pytest -m int tests/integration/test_int4.py
+  ```
+- **Résultat** : canal b6g, chaincode eventlog (Go, endossement AND Org1/Org2), passerelle I-07 sur :8082.
+  Atelier 21 : 100/100 événements inscrits, vérifiés, endossés par Org1 et Org2 ; coûts à 1/10/50 tx/s sans échec.
+  test_int4 : 4 réussis (CT-07 réel, actions de l'Actionneur inscrites, rejeu NTN par netem), 1 ignoré (D7).
+- **Problèmes et solutions** :
+  - Script officiel install-fabric.sh refusé par le contrôle de sécurité de l'environnement : étapes refaites une à une
+    (dépôt fabric-samples, binaires des releases, images docker pull), identiques à ce que fait le script.
+  - fabric-samples n'a pas de tag v2.5.16 : branche main (comme le repli du script officiel).
+  - Go absent de l'hôte : chaîne Go de l'image fabric-ccenv:2.5.16 via une enveloppe ~/b6g-ext/fabric/gowrap/go.
+  - Chaincode en Go (et non JavaScript) : contrôle exact de la forme canonique des nombres pour que l'empreinte soit
+    identique à celle de b6g_common (test eventlog_test.go avec empreintes de référence Python).
+  - Liste I-07 : format {items, total} attendu par le contrat (filtres appliqués par le chaincode).
+  - Émission de l'Actionneur vers le registre rendue asynchrone (file locale + fil dédié) : l'action reste < 2 s même
+    si l'inscription prend 0,2 à 2 s ; réessai si le registre est indisponible (409 = déjà inscrit, accepté).
+  - netem sur n2n3-gnb1 : le conteneur gNB n'a pas NET_ADMIN ; appliqué par un conteneur d'appoint dans son espace réseau.
+- **Retour arrière** : `make down-ledger` ; `rm -rf ~/b6g-ext/fabric`.
+
+### 2026-11-21 — Laboratoire d'attaque isolé b6g-lab (M11, T27.2)
+
+- **Objectif** : générer le jeu D7 (trafic normal et anormal étiqueté) pour la détection d'intrusion (équipe 2).
+- **Commandes** :
+  ```bash
+  make up-lab        # cœur et RAN « lab- » sur le réseau Docker b6g-lab (internal: true, 10.230.0.0/24)
+  make lab-status    # 10 tunnels par conteneur d'UE
+  make lab-run       # captures + labels.csv + manifeste dans datasets/raw/security/ (hors dépôt)
+  ```
+- **Résultat** : laboratoire isolé fonctionnel (30 UEs), sortie Internet impossible (vérifié : ping 8.8.8.8 depuis un UE
+  échoue, ping de la victime interne réussit), outils hping3 3.0, nmap 7.94, tcpdump 4.99 dans les conteneurs d'attaque.
+  Première campagne : trafic de fond et tempête d'enregistrements capturés et étiquetés ; inondation UDP et balayage non
+  confirmés dans les captures (routage par source du tunnel non appliqué). Jeu mal étiqueté retiré.
+- **Problèmes et solutions** :
+  - Sous-réseau 172.23.0.0 déjà utilisé par fabric_test : laboratoire déplacé en 10.230.0.0/24.
+  - UDR/PCF du laboratoire : variable d'image DB_URI=mongodb://mongo/... prioritaire sur le fichier ; adresse MongoDB
+    imposée par environnement dans le Compose généré (corrigé aussi pour la plateforme principale).
+  - Attaques hping3/nmap non routées par le tunnel (routage par source d'UERANSIM) : route hôte vers la victime ajoutée
+    par le tunnel dans `run_scenarios.py` ; garde-fou qui refuse d'étiqueter une attaque sans paquets émis (tx_packets).
+  - La génération d'attaques est bloquée par le contrôle de sécurité de l'environnement en session automatisée : la
+    campagne complète est à lancer par le responsable (`make lab-run`).
+- **Retour arrière** : `make down-lab` ; `docker network rm b6g-lab`.

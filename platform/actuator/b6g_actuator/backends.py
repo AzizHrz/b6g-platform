@@ -101,8 +101,9 @@ class TcBackend(MemoryBackend):
 
     def _netem(self, link: str, p: dict) -> None:
         clear = not p
-        if link.startswith("tier-"):
-            node = self.sc["tiers"][link.removeprefix("tier-")]["k8s_node"]
+        if link.startswith("tier-") or link == "n2n3-gnb1":
+            # Nœud k3d (pas de tc dans l'image) ou gNB (conteneur sans NET_ADMIN) : conteneur d'appoint dans son espace réseau
+            node = "gnb" if link == "n2n3-gnb1" else self.sc["tiers"][link.removeprefix("tier-")]["k8s_node"]
             tc = (["tc", "qdisc", "del", "dev", "eth0", "root"] if clear
                   else ["tc", "qdisc", "replace", "dev", "eth0", "root", *self._netem_args(p)])
             try:
@@ -111,17 +112,12 @@ class TcBackend(MemoryBackend):
             except RuntimeError as e:
                 if not (clear and "No such file" in str(e) or clear and "Cannot delete" in str(e)):
                     raise
-        elif link.startswith("n6-"):
+        else:  # n6-<slice> : file de la classe HTB de la slice dans son UPF (sens descendant)
             c = self.upf[link.removeprefix("n6-")]
             if clear:
                 self.run(c, "sh", "-c", f"tc qdisc del dev {TUN} parent 1:10 2>/dev/null; true")
             else:
                 self.run(c, "tc", "qdisc", "replace", "dev", TUN, "parent", "1:10", "handle", "10:", *self._netem_args(p))
-        else:  # n2n3-gnb1 : sortie du gNB (N2 et N3)
-            if clear:
-                self.run("gnb", "sh", "-c", "tc qdisc del dev eth0 root 2>/dev/null; true")
-            else:
-                self.run("gnb", "tc", "qdisc", "replace", "dev", "eth0", "root", *self._netem_args(p))
 
     # ---- deployment.* -----------------------------------------------------------------------------------------
     def _namespace(self, deployment: str) -> str:

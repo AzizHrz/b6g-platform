@@ -106,3 +106,11 @@ def test_compteurs_octets_par_slice_et_sens(sc):
     lines = TcBackend(sc, runner=FakeRunner()).metrics()
     assert 'b6g_slice_tun_bytes_total{slice="v2x",direction="dl"} 8000' in lines
     assert 'b6g_slice_tun_bytes_total{slice="v2x",direction="ul"} 1000' in lines
+
+
+def test_netem_gnb_par_conteneur_appoint(sc):
+    """Le conteneur gNB n'a pas NET_ADMIN : netem appliqué depuis un conteneur d'appoint dans son espace réseau."""
+    host = FakeHost()
+    TcBackend(sc, runner=FakeRunner(), host=host).apply(
+        {"type": "link.netem", "target": "n2n3-gnb1", "params": {"delay_ms": 20}, "reason": "t"}, state())
+    assert host.calls[0][4] == "container:gnb" and host.calls[0][-2:] == ("delay", "20ms")

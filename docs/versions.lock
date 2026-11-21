@@ -12,7 +12,7 @@ prometheus              2.55.1          INT1             2026-11-21
 grafana                 10.4.19         INT1             2026-11-21
 qemu                    10.0.13         5                2026-11-21
 libvirt                 11.3.0          5                2026-11-21
-fabric                  à compléter     6
+fabric                  2.5.16          6                2026-11-21
 ollama                  à compléter     7
 llama3.2                3b              7
 iproute2                6.15.0          2                2026-11-21
@@ -34,3 +34,9 @@ kube-state-metrics      5.25.1 (chart)  A08              2026-11-21
 ubuntu-cloud-image      22.04 (jammy)   5                2026-11-21
 open5gs-upf-vm          2.8.0           A07              2026-11-21   # PPA open5gs/latest
 b6g-actuator            2.0.0           INT3             2026-11-21
+fabric-ca               1.5.17          6                2026-11-21
+fabric-gateway-sdk      1.11.0 (npm)    A21              2026-11-21
+nodejs                  20.20.2         A21              2026-11-21   # image node:20-alpine (passerelle)
+go                      1.26.4          A21              2026-11-21   # image fabric-ccenv:2.5.16 (chaincode)
+hping3                  3.0.0           A27              2026-11-21   # image attack-tools (labo isolé)
+nmap                    7.94            A27              2026-11-21

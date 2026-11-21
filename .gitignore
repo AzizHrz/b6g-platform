@@ -68,6 +68,8 @@ platform/core/generated/
 platform/ran/generated/
 platform/observability/generated/
 platform/k8s/generated/
+platform/ledger/chaincode/*/vendor/
+platform/attack-lab/generated/
 
 # Secrets et identités
 .env

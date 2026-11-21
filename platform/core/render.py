@@ -215,8 +215,11 @@ def compose(sc: dict, a: dict[str, str]) -> dict:
     nf("nrf", "open5gs-nrfd", [])
     for name in ("ausf", "udm", "bsf", "nssf"):
         nf(name, f"open5gs-{name}d", ["nrf"])
-    nf("udr", "open5gs-udrd", ["nrf", "mongo"])
-    nf("pcf", "open5gs-pcfd", ["nrf", "mongo"])
+    # L'image Open5GS définit DB_URI=mongodb://mongo/open5gs, prioritaire sur le fichier de configuration :
+    # valeur imposée à l'adresse générée (sinon dépendance au nom de conteneur « mongo »)
+    db_env = {"environment": {"DB_URI": f"mongodb://{a['mongo']}/open5gs"}}
+    nf("udr", "open5gs-udrd", ["nrf", "mongo"], db_env)
+    nf("pcf", "open5gs-pcfd", ["nrf", "mongo"], db_env)
     for s in sc["slices"]:
         upf = s["upf"]
         nf(upf, "open5gs-upfd", ["nrf"], {
