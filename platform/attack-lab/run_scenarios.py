@@ -25,7 +25,9 @@ from b6g_common.paths import contracts_dir
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "datasets" / "raw" / "security"
-CAPTURES = {"lab-upf-embb": "ogstun", "lab-upf-v2x": "ogstun", "lab-upf-miot": "ogstun", "lab-amf": "any"}
+# Interface « any » sur chaque UPF : le trafic montant (attaques) arrive encapsulé et ressort par eth0, pas par
+# ogstun ; « any » capture les deux sens (ogstun pour le descendant, eth0 pour le montant décapsulé et le GTP-U).
+CAPTURES = {"lab-upf-embb": "any", "lab-upf-v2x": "any", "lab-upf-miot": "any", "lab-amf": "any"}
 TOOLS = "b6g/attack-tools:0.1.0"
 IPERF_BASE_PORT = 5201
 
