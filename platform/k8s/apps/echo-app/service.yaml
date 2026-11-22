@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: b6g-echo-app
+  namespace: b6g-cloud
+  labels: {app: b6g-echo-app}
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local   # requête servie par le nœud qui héberge le pod : délai du niveau seul
+  selector: {app: b6g-echo-app}
+  ports:
+    - {name: http, port: 8080, targetPort: http, nodePort: 30080}

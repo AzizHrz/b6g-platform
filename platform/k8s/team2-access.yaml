@@ -1,0 +1,24 @@
+# Accès restreint de l'équipe 2 (M06, livré à INT3) : droits « edit » limités aux espaces b6g-edge, b6g-fog, b6g-cloud.
+# Aucun droit sur b6g-5gc (cœur), b6g-core ni sur le cluster. Le kubeconfig est généré par make k8s-team2-kubeconfig
+# (platform/k8s/team2_kubeconfig.py) et transmis hors Git.
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: b6g-equipe2, namespace: b6g-core}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: b6g-equipe2-edit, namespace: b6g-edge}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: edit}
+subjects: [{kind: ServiceAccount, name: b6g-equipe2, namespace: b6g-core}]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: b6g-equipe2-edit, namespace: b6g-fog}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: edit}
+subjects: [{kind: ServiceAccount, name: b6g-equipe2, namespace: b6g-core}]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: b6g-equipe2-edit, namespace: b6g-cloud}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: edit}
+subjects: [{kind: ServiceAccount, name: b6g-equipe2, namespace: b6g-core}]

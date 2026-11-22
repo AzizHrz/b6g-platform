@@ -1,0 +1,28 @@
+# Gabarit I-11 : ne pas modifier ; les valeurs viennent de params.env (replacements de kustomization.yaml)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: APP
+  labels: {app: APP, b6g/tier: TIER}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: APP}
+  template:
+    metadata:
+      labels: {app: APP, b6g/tier: TIER}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8080"}
+    spec:
+      nodeSelector: {b6g/tier: TIER}
+      containers:
+        - name: app
+          image: IMAGE
+          env:
+            - {name: B6G_TIER, value: TIER}
+            - {name: PORT, value: "8080"}
+          ports: [{name: http, containerPort: 8080}]
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 2

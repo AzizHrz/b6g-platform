@@ -1,0 +1,18 @@
+# Auto-scaling horizontal (T08.4) : 1 à 10 répliques, cible 50 % de la requête CPU (200m)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: b6g-echo-app
+  namespace: b6g-cloud
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: b6g-echo-app}
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: {type: Utilization, averageUtilization: 50}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60

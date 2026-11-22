@@ -1,0 +1,4 @@
+ts,config,vcpu,cpu_ratio,memory_bytes,throughput_mbps,downtime_ms,status,qemu_downtime_ms,total_time_ms,duree_mesuree_s,ping_interruption_ms,pings_recus,pings_attendus_env,ram_transferee_mo
+2026-11-21T18:49:41.889Z,migration-1,1,,536870912,,32.0,completed,12,4922,4.924,32.0,526,892,701.6
+2026-11-21T18:49:54.390Z,migration-2,1,,536870912,,72.1,completed,37,3443,3.444,72.1,434,744,478.9
+2026-11-21T18:50:06.884Z,migration-3,1,,536870912,,72.0,completed,33,3436,3.438,72.0,435,743,474.5

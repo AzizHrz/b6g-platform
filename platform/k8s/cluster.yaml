@@ -1,0 +1,38 @@
+# Cluster k3d « b6g » (M06, T08.2) : 1 serveur, 3 agents étiquetés par niveau (config/scenario.yaml § tiers).
+#   make up-k8s    (k3d cluster create --config platform/k8s/cluster.yaml)
+# Nœuds : k3d-b6g-server-0, k3d-b6g-agent-0 (edge), k3d-b6g-agent-1 (fog), k3d-b6g-agent-2 (cloud).
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: b6g
+servers: 1
+agents: 3
+image: rancher/k3s:v1.30.4-k3s1
+kubeAPI:
+  hostIP: "0.0.0.0"
+  hostPort: "6443"
+options:
+  k3d:
+    wait: true
+    timeout: "180s"
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik          # pas d'ingress : services exposés en NodePort
+        nodeFilters: [server:*]
+    nodeLabels:
+      - label: b6g/tier=edge
+        nodeFilters: [agent:0]
+      - label: b6g/tier=fog
+        nodeFilters: [agent:1]
+      - label: b6g/tier=cloud
+        nodeFilters: [agent:2]
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
+# Registre d'images local (I-12) : les manifestes référencent b6g-plat:5000/b6g/<module>:<version>
+registries:
+  config: |
+    mirrors:
+      "b6g-plat:5000":
+        endpoint:
+          - http://host.k3d.internal:5000

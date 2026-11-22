@@ -1,0 +1,29 @@
+# b6g-echo-app (T08.4) : déploiement sur le niveau Cloud, image du registre local (I-12)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: b6g-echo-app
+  namespace: b6g-cloud
+  labels: {app: b6g-echo-app, b6g/tier: cloud}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: b6g-echo-app}
+  template:
+    metadata:
+      labels: {app: b6g-echo-app, b6g/tier: cloud}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8080"}
+    spec:
+      nodeSelector: {b6g/tier: cloud}
+      containers:
+        - name: echo
+          image: b6g-plat:5000/b6g/echo-app:0.1.0
+          env:
+            - {name: B6G_TIER, value: cloud}
+          ports: [{containerPort: 8080, name: http}]
+          resources:
+            requests: {cpu: 200m, memory: 32Mi}
+            limits: {cpu: 1000m, memory: 64Mi}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 2

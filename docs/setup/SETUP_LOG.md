@@ -279,3 +279,198 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
   - Plusieurs UEs regroupés dans une même trame SCTP : décodage PDU par PDU (sortie PDML) pour attribuer chaque
     message NGAP à son RAN-UE-NGAP-ID.
 - **Retour arrière** : sans objet (lecture seule) ; `rm -r ~/b6g-data/a03/pcap` pour libérer l'espace.
+
+### 2026-11-21 — Kubernetes léger : k3d, kubectl, Helm et cluster b6g (étape 4 du guide, T08.2)
+
+- **Objectif** : cluster à trois niveaux pour les ateliers 8, 10 et 12 (INT3).
+- **Machine** : Debian 13.7, Docker 29.9.3 ; outils installés sans droits administrateur dans `~/b6g-ext/bin`.
+- **Commandes** :
+  ```bash
+  curl -fsSLo k3d https://github.com/k3d-io/k3d/releases/download/v5.7.4/k3d-linux-amd64      # + checksums.txt
+  curl -fsSLo kubectl https://dl.k8s.io/release/v1.30.6/bin/linux/amd64/kubectl               # + kubectl.sha256
+  curl -fsSLo helm.tgz https://get.helm.sh/helm-v3.16.2-linux-amd64.tar.gz                    # + .sha256sum
+  install -m 0755 k3d kubectl linux-amd64/helm ~/b6g-ext/bin/
+  make up-k8s                                   # platform/k8s/cluster.yaml
+  ```
+- **Résultat** : k3d 5.7.4, k3s v1.30.4, kubectl 1.30.6, Helm 3.16.2 (sommes SHA-256 vérifiées). Cluster `b6g` :
+  1 serveur, 3 agents étiquetés `b6g/tier=edge|fog|cloud`, API sur 6443, registre `b6g-plat:5000` relayé vers le
+  registre local ; nœuds prêts en 15 s.
+- **Vérification** : `kubectl get nodes -L b6g/tier` ; image `b6g-plat:5000/b6g/echo-app:0.1.0` tirée par le cluster.
+- **Problèmes et solutions** : somme de contrôle k3d d'abord non trouvée : le fichier `checksums.txt` préfixe les noms par
+  `_dist/` ; comparaison manuelle conforme.
+- **Retour arrière** : `make down-k8s` ; `rm ~/b6g-ext/bin/{k3d,kubectl,helm}`.
+
+### 2026-11-21 — Cœur Open5GS dans k3d par Helm (T08.2)
+
+- **Objectif** : un UE s'enregistre sur le cœur déployé dans Kubernetes.
+- **Commandes** : `make k8s-core` (charts Gradiant `open5gs` 2.2.5 et `ueransim-gnb` 0.2.6, valeurs générées par
+  `platform/k8s/values/render.py` depuis le scénario, espace de noms `b6g-5gc`).
+- **Résultat** : 13 fonctions 5G, UE 001010000000001 enregistré, session PDU, RTT 2,1 ms vers l'UPF, 36 ms vers Internet.
+- **Problèmes et solutions** :
+  - MongoDB `ImagePullBackOff` : `bitnami/mongodb:5.0.10-debian-11-r3` retiré de docker.io/bitnami (2025) ; même version
+    depuis `bitnamilegacy/mongodb`.
+  - UPF `Init:CrashLoopBackOff` (« Net device already exists ») : clé `dev: ogstun` ajoutée dans `subnetList`.
+  - Fonctions 4G déployées par défaut : désactivées (`hss`, `mme`, `pcrf`, `sgwc`, `sgwu`).
+  - Enregistrement rejeté (cause 95) ; SCP : « No SEPP », « NF-Discover failed [400] ». Cause : NRF sur le PLMN par
+    défaut du chart (999/70), UE traité comme itinérant. Correction : `nrf.config.servingList` = 001/01, redémarrage
+    des fonctions (`kubectl rollout restart`).
+  - Tunnel de l'UE inutilisable après redémarrage simultané du gNB et des UEs (attachement à l'ancien pod gNB) :
+    redémarrage de l'UE seul.
+  - `pkill -f 'helm upgrade …'` a arrêté son propre shell (code 144) : commande abandonnée.
+- **Retour arrière** : `make k8s-core-down` ; `kubectl delete namespace b6g-5gc`.
+
+### 2026-11-21 — Observabilité du cluster (T08.3) et auto-scaling (T08.4)
+
+- **Commandes** : `make k8s-obs` (kube-state-metrics 5.25.1 par Helm, compte `prometheus-b6g` en lecture seule, jeton
+  dans `platform/observability/generated/k8s-token`, Prometheus relié au réseau `k3d-b6g`) ;
+  `kubectl apply -k platform/k8s/apps/echo-app` ; `.venv/bin/python ateliers/a08/run_a08.py`.
+- **Résultat** : toutes les cibles Prometheus `up` (dont `k8s-cadvisor`, `kube-state-metrics`, `k8s-pods`) ;
+  `b6g_k8s_replicas`, `b6g_app_request_latency_ms` et CPU des niveaux publiés ; CPU et mémoire de 16 pods dans Grafana.
+- **Problèmes et solutions** :
+  - Collecte k8s ajoutée sans casser INT1 quand le cluster est arrêté : fichiers de collecte optionnels
+    (`scrape_config_files`, Prometheus ≥ 2.43) générés seulement par `make k8s-obs` ; montage du dossier `generated/`
+    complet dans Prometheus (recréation du conteneur, données conservées).
+  - Premier essai d'HPA avec une requête CPU de 100m : 10 répliques dès 2 clients. Requête portée à 200m, limite 1 cœur,
+    charge avec pause de 200 ms par client.
+- **Retour arrière** : `make k8s-obs-off` ; `helm -n kube-system uninstall kube-state-metrics`.
+
+### 2026-11-21 — UPF miot en machine virtuelle KVM (T07.2) et laboratoire de migration (T07.4)
+
+- **Objectif** : remplacer le conteneur `upf-miot` par une VM, même adresse N4 / N3 ; migration à chaud mesurée.
+- **Commandes** :
+  ```bash
+  curl -fsSLo ~/b6g-data/vm/jammy-server-cloudimg-amd64.img https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+  grep ' \*jammy-server-cloudimg-amd64.img$' SHA256SUMS | sed 's/\*//' | sha256sum -c -
+  docker stop upf-miot
+  .venv/bin/python platform/vm/upf-vm/build.py --vcpus 1          # pool libvirt b6g, cloud-init, virt-install
+  docker build -t b6g/qemu-lab:0.1.0 platform/vm/qemu-lab
+  ```
+- **Résultat** : image Ubuntu 22.04 vérifiée (681 Mo) ; VM `upf-miot-vm` (1 vCPU, 1 Gio) raccordée au pont Docker
+  `b6g-core`, Open5GS UPF 2.8.0 (PPA officiel) prête en moins de 2 min, association PFCP avec `smf-miot` (2.7.7),
+  10 UEs miot à travers la VM (RTT 1,3 ms vers la passerelle, 47 ms vers Internet). Image du laboratoire QEMU : 320 Mo.
+- **Problèmes et solutions** :
+  - Dossier personnel en `drwx------` : l'utilisateur `libvirt-qemu` ne lit pas les disques placés dans `~`. Au lieu de
+    modifier ces droits, pool libvirt `b6g` dans `/var/lib/libvirt/images/b6g`, géré par libvirtd (groupe libvirt).
+  - Pool créé mais non démarré : test d'état erroné (« inactive » contient « active ») ; comparaison exacte à `running`.
+  - Conflit d'adresse 172.22.0.43 entre la VM et le conteneur `upf-miot` : conteneur arrêté pendant l'atelier 7.
+  - `cloud-image-utils` absent : disque cloud-init construit par `xorriso`.
+  - Version : le PPA fournit Open5GS 2.8.0 (conteneurs en 2.7.7) ; PFCP compatible, sessions établies.
+  - Ajout de vCPU à chaud (`setvcpus --live`) sans effet dans l'invité (`nproc` = 1) : changement à froid.
+  - Migration à chaud refusée par libvirt vers le même hôte : deux hyperviseurs QEMU dans un conteneur privilégié
+    (pont interne, deux interfaces tap, QMP), disque partagé.
+- **Retour arrière** : `virsh -c qemu:///system destroy upf-miot-vm && virsh -c qemu:///system undefine upf-miot-vm`,
+  `virsh -c qemu:///system pool-destroy b6g`, `docker start upf-miot`.
+
+### 2026-11-21 — Actionneur v2, niveaux Edge / Fog / Cloud et jalon INT3
+
+- **Objectif** : actions v2 sur la plateforme réelle, délais des niveaux (atelier 10), gabarit I-11, edge-infer, INT3.
+- **Commandes** :
+  ```bash
+  make stop-actuator up-actuator                  # Actionneur 2.0.0 (backend tc)
+  make k8s-connect k8s-namespaces                 # UPF reliées au réseau k3d-b6g ; b6g-edge, b6g-fog, b6g-cloud, b6g-core
+  docker build -t 127.0.0.1:5000/b6g/edge-infer:stub platform/apps/edge-infer-stub && docker push 127.0.0.1:5000/b6g/edge-infer:stub
+  kubectl apply -k platform/k8s/apps/edge-infer-edge ; kubectl apply -k platform/k8s/apps/edge-infer-cloud
+  make k8s-team2-kubeconfig                       # platform/k8s/generated/kubeconfig-equipe2 (hors Git)
+  .venv/bin/python ateliers/a10/run_a10.py
+  .venv/bin/pytest -m int tests/integration/test_int3.py
+  ```
+- **Résultat** : délais des niveaux vérifiés par ping (2,6 / 12,2 / 40,1 ms) ; RTT applicatif p50 6,3 / 24,0 / 85,3 ms
+  (Edge / Fog / Cloud) ; INT3 : 12 réussis, 1 ignoré ; INT1 toujours conforme (16 réussis).
+- **Vérification** : `kubectl --kubeconfig platform/k8s/generated/kubeconfig-equipe2 auth can-i create deployments -n b6g-edge`
+  → yes ; `-n b6g-5gc` → no.
+- **Problèmes et solutions** :
+  - L'image k3s n'a ni `tc` ni `ip` : netem des niveaux appliqué par un conteneur d'appoint (image Open5GS) partageant
+    l'espace réseau du nœud (`docker run --net container:<nœud>`).
+  - Le policer montant v1 occupait la priorité 1, réservée aux filtres d'isolement des UEs : déplacé en priorité 100,
+    ancien filtre supprimé une fois sur chaque UPF.
+  - Requête NodePort servie via un autre nœud (délai d'un autre niveau) : `externalTrafficPolicy: Local`.
+  - Sonde de disponibilité du gabarit sur `/health`, contrat edge-infer sur `/v1/health` : la version de remplacement
+    répond aux deux chemins.
+  - matplotlib 3.11 : paramètre `labels` de `boxplot` renommé `tick_labels`.
+  - Juste après `test_int3` (arrêt et reprise de la slice miot), `test_int1` voit 9 sessions miot sur 10 (moyenne sur
+    30 s) : relancer INT1 après 30 s (16 réussis).
+- **Retour arrière** : actions inverses par l'Actionneur ; `kubectl delete -k platform/k8s/apps/edge-infer-edge` ;
+  `docker network disconnect k3d-b6g upf-<slice>`.
+
+### 2026-11-21 — Registre Hyperledger Fabric (étape 6 du guide, atelier 21) et jalon INT4
+
+- **Objectif** : registre réel pour les événements de la plateforme (I-07), endossé par deux organisations ; INT4.
+- **Machine** : Debian 13.7, Docker 29.9.3. Fabric installé hors dépôt dans ~/b6g-ext/fabric.
+- **Commandes** :
+  ```bash
+  git clone --depth 1 https://github.com/hyperledger/fabric-samples.git ~/b6g-ext/fabric/fabric-samples
+  # binaires officiels Fabric 2.5.16 et CA 1.5.17 (releases GitHub), images hyperledger/* 2.5.16 et ca 1.5.17
+  make up-ledger
+  B6G_LEDGER_URL=http://127.0.0.1:8082 make up-actuator
+  .venv/bin/pytest -m int tests/integration/test_int4.py
+  ```
+- **Résultat** : canal b6g, chaincode eventlog (Go, endossement AND Org1/Org2), passerelle I-07 sur :8082.
+  Atelier 21 : 100/100 événements inscrits, vérifiés, endossés par Org1 et Org2 ; coûts à 1/10/50 tx/s sans échec.
+  test_int4 : 4 réussis (CT-07 réel, actions de l'Actionneur inscrites, rejeu NTN par netem), 1 ignoré (D7).
+- **Problèmes et solutions** :
+  - Script officiel install-fabric.sh refusé par le contrôle de sécurité de l'environnement : étapes refaites une à une
+    (dépôt fabric-samples, binaires des releases, images docker pull), identiques à ce que fait le script.
+  - fabric-samples n'a pas de tag v2.5.16 : branche main (comme le repli du script officiel).
+  - Go absent de l'hôte : chaîne Go de l'image fabric-ccenv:2.5.16 via une enveloppe ~/b6g-ext/fabric/gowrap/go.
+  - Chaincode en Go (et non JavaScript) : contrôle exact de la forme canonique des nombres pour que l'empreinte soit
+    identique à celle de b6g_common (test eventlog_test.go avec empreintes de référence Python).
+  - Liste I-07 : format {items, total} attendu par le contrat (filtres appliqués par le chaincode).
+  - Émission de l'Actionneur vers le registre rendue asynchrone (file locale + fil dédié) : l'action reste < 2 s même
+    si l'inscription prend 0,2 à 2 s ; réessai si le registre est indisponible (409 = déjà inscrit, accepté).
+  - netem sur n2n3-gnb1 : le conteneur gNB n'a pas NET_ADMIN ; appliqué par un conteneur d'appoint dans son espace réseau.
+- **Retour arrière** : `make down-ledger` ; `rm -rf ~/b6g-ext/fabric`.
+
+### 2026-11-21 — Laboratoire d'attaque isolé b6g-lab (M11, T27.2)
+
+- **Objectif** : générer le jeu D7 (trafic normal et anormal étiqueté) pour la détection d'intrusion (équipe 2).
+- **Commandes** :
+  ```bash
+  make up-lab        # cœur et RAN « lab- » sur le réseau Docker b6g-lab (internal: true, 10.230.0.0/24)
+  make lab-status    # 10 tunnels par conteneur d'UE
+  make lab-run       # captures + labels.csv + manifeste dans datasets/raw/security/ (hors dépôt)
+  ```
+- **Résultat** : laboratoire isolé fonctionnel (30 UEs), sortie Internet impossible (vérifié : ping 8.8.8.8 depuis un UE
+  échoue, ping de la victime interne réussit), outils hping3 3.0, nmap 7.94, tcpdump 4.99 dans les conteneurs d'attaque.
+  Première campagne : trafic de fond et tempête d'enregistrements capturés et étiquetés ; inondation UDP et balayage non
+  confirmés dans les captures (routage par source du tunnel non appliqué). Jeu mal étiqueté retiré.
+- **Problèmes et solutions** :
+  - Sous-réseau 172.23.0.0 déjà utilisé par fabric_test : laboratoire déplacé en 10.230.0.0/24.
+  - UDR/PCF du laboratoire : variable d'image DB_URI=mongodb://mongo/... prioritaire sur le fichier ; adresse MongoDB
+    imposée par environnement dans le Compose généré (corrigé aussi pour la plateforme principale).
+  - Attaques hping3/nmap non routées par le tunnel (routage par source d'UERANSIM) : route hôte vers la victime ajoutée
+    par le tunnel dans `run_scenarios.py` ; garde-fou qui refuse d'étiqueter une attaque sans paquets émis (tx_packets).
+  - La génération d'attaques est bloquée par le contrôle de sécurité de l'environnement en session automatisée : la
+    campagne complète est à lancer par le responsable (`make lab-run`).
+- **Retour arrière** : `make down-lab` ; `docker network rm b6g-lab`.
+
+### 2026-11-22 — Énergie (atelier 25) et boucle MAPE-K (atelier 26)
+
+- **Objectif** : exporteur de consommation et politique de sobriété (M09) ; boucle autonome Monitor→Analyze→Decide→Act→Learn (M10).
+- **Commandes** :
+  ```bash
+  make up-energy up-green                 # exporteur énergie (conteneur) + politique de sobriété
+  .venv/bin/python ateliers/a25/run_a25.py
+  make up-mocks-ia                         # Décision :8090 et Jumeau :8091 (mocks équipe 2)
+  .venv/bin/python ateliers/a26/run_a26.py
+  ```
+- **Résultat** : atelier 25 : économie de 4,8 W (5,3 %) par mise en veille de la slice miot et scale-to-zero d'edge-infer,
+  sans impact QoS. Atelier 26 : boucle MAPE-K complète, 10 itérations sans intervention, journal D8, événements
+  `loop.iteration` dans Fabric, compteur `b6g_loop_iterations_total`. Détails et limite : `ateliers/a26/README.md`.
+- **Problèmes et solutions** :
+  - Exporteur énergie collecté par Prometheus malgré le pare-feu : conteneurisé sur le réseau b6g-obs (pas de port hôte).
+  - Un composant mis en veille ne publie plus de CPU : l'exporteur met sa puissance à 0 (sinon dernière valeur figée).
+  - `slice.state` (arrêt des conteneurs) dépassait le délai client : `docker stop -t 2` et client 40 s.
+  - Rôle du Jumeau précisé en sécurité (refuse une action qui introduit une nouvelle violation), pour permettre une
+    convergence en plusieurs étapes au lieu d'exiger un rétablissement en une seule.
+- **Retour arrière** : `make stop-green stop-energy stop-mocks-ia`.
+
+### 2026-11-22 — Correctif D7 : routage des attaques par le tunnel 5G
+
+- **Objectif** : que l'inondation UDP et le balayage passent réellement par la liaison 5G de l'UE (UE→gNB→UPF→victime),
+  et non par l'interface directe du conteneur sur le réseau du laboratoire.
+- **Problème** (signalé par le garde-fou de `run_scenarios.py` : « 0 paquets émis par uesimtun0 ») : la victime
+  `lab-iperf` est sur le même pont que l'interface directe des UEs ; hping3/nmap l'atteignaient directement sans
+  emprunter le tunnel `uesimtunN`. Le garde-fou a refusé de produire un jeu D7 mal étiqueté.
+- **Solution** : forcer l'adresse **source** au tunnel (hping3 `-a <ip_tunnel>`, nmap `-S <ip_tunnel>`) en plus de la
+  route `/32` par le tunnel : le routage par source d'UERANSIM envoie alors le trafic par le tunnel. À relancer par le
+  responsable : `make lab-run` (les outils d'attaque ne sont pas exécutables en session automatisée).

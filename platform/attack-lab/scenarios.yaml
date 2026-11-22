@@ -1,0 +1,22 @@
+# Scénarios du laboratoire isolé b6g-lab (M11, T27.2). Exécutés par platform/attack-lab/run_scenarios.py,
+# uniquement sur le réseau Docker « b6g-lab » (internal: true, aucune route externe).
+# Trafic normal de fond : chaque UE envoie un ping par seconde vers le serveur victime pendant toute la campagne.
+# Étiquettes D7 : normal | udp_flood | reg_storm | scan (contracts/datasets.yaml).
+victim: lab-iperf                 # serveur du réseau de données du laboratoire
+background_s: 60                  # fenêtre initiale de trafic normal seul
+pause_s: 20                       # trafic normal seul entre deux attaques
+scenarios:
+  - label: udp_flood
+    ue: ue-miot-01                # UE compromis (conteneur lab-ue-miot, interface uesimtun0)
+    tool: iperf3-udp              # socket normal routé par le tunnel 5G (hping3 en socket brut le contournait)
+    duration_s: 30
+    intensity: {pps: 5000, size_bytes: 512}
+  - label: reg_storm
+    ue_container: lab-ue-v2x      # 10 UEs v2x : redémarrages successifs du conteneur (ré-enregistrements)
+    duration_s: 30
+    intensity: {restarts: 3, interval_s: 10}
+  - label: scan
+    ue: ue-embb-01
+    tool: nmap
+    duration_s: 30
+    intensity: {ports: "1-2000", timing: T4}

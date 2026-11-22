@@ -2,13 +2,17 @@
 global:
   scrape_interval: 5s
   evaluation_interval: 5s
-rule_files: [/etc/prometheus/rules/*.yml]
+rule_files: [/etc/prometheus/rules/*.yml, /etc/prometheus/generated/rules/*.yml]
+# Collectes optionnelles générées (k3d : make k8s-obs) ; absentes quand le cluster est arrêté
+scrape_config_files: [/etc/prometheus/generated/scrape.d/*.yml]
 scrape_configs:
   # Cibles Open5GS générées depuis config/scenario.yaml par platform/core/render.py
   - job_name: open5gs
-    file_sd_configs: [{files: [/etc/prometheus/targets/open5gs.json], refresh_interval: 30s}]
+    file_sd_configs: [{files: [/etc/prometheus/generated/targets/open5gs.json], refresh_interval: 30s}]
   - job_name: actuator
     static_configs: [{targets: ["host.docker.internal:8081"]}]
+  - job_name: energy
+    static_configs: [{targets: ["energy:9105"]}]
   - job_name: pushgateway
     honor_labels: true
     static_configs: [{targets: ["pushgateway:9091"]}]

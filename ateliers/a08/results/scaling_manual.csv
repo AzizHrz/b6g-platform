@@ -1,0 +1,3 @@
+action,repliques,delai_disponibilite_s
+kubectl scale --replicas=3,3,2.02
+kubectl scale --replicas=1,1,0.16

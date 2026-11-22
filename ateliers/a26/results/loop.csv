@@ -1,0 +1,11 @@
+ts,outcome,violations,actions,decision_id,rejected,sla_ok_before,sla_ok_after
+2026-11-22T02:56:36.641Z,rejected,2,1,2f63ce62-e392-4594-b510-e3be3d09e0ac,0,False,False
+2026-11-22T02:56:47.157Z,rejected,2,1,782bb4d1-d337-4569-b41c-b15198bcff9e,0,False,False
+2026-11-22T02:56:57.711Z,rejected,2,1,c14076e6-9269-4a51-be57-d71fdd4e0ff7,0,False,False
+2026-11-22T02:57:08.300Z,rejected,2,1,e3e491e0-6ea1-47df-99c6-6c8d78a98b70,0,False,False
+2026-11-22T02:57:18.913Z,rejected,2,1,eab94f69-9020-49b7-a08d-921f08fa0439,0,False,False
+2026-11-22T02:57:29.542Z,rejected,2,1,5ae4ba35-51df-4169-a9c8-641780157913,0,False,False
+2026-11-22T02:57:40.015Z,rejected,2,1,af15792b-c394-4bb9-baf0-11e5c4e853a3,0,False,False
+2026-11-22T02:57:50.172Z,rejected,2,0,,0,False,False
+2026-11-22T02:58:00.337Z,rejected,2,0,,0,False,False
+2026-11-22T02:58:10.512Z,rejected,3,0,,0,False,False

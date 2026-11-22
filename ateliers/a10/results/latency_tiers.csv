@@ -1,0 +1,4 @@
+ts,niveau,noeud,delai_ajoute_ms,cpu_millicores_niveau,requetes,echecs,rtt_p50_ms,rtt_p95_ms,rtt_moyen_ms,deplacement_s,action
+2026-11-21T19:00:28.300Z,cloud,k3d-b6g-agent-2,40,8000,1000,0,85.27,87.08,85.02,0.1,96d6e2f3-23b8-4549-b8fe-41e1b43294fa
+2026-11-21T19:01:07.796Z,fog,k3d-b6g-agent-1,10,4000,1000,0,23.95,25.63,23.83,2.8,f57b72be-113c-4b6f-9df6-0a112a9e55dc
+2026-11-21T19:01:27.906Z,edge,k3d-b6g-agent-0,2,2000,1000,0,6.27,7.13,6.29,2.3,fcbbdb25-8be2-4113-a082-a2a4b4ccf31d
