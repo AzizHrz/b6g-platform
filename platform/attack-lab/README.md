@@ -21,9 +21,9 @@ s'exécuter si le réseau n'est pas isolé.
 | Étiquette | Description | Outil |
 | --- | --- | --- |
 | `normal` | trafic de fond : un ping par seconde de chaque UE vers la victime | ping |
-| `udp_flood` | inondation UDP depuis un UE compromis | hping3 |
+| `udp_flood` | inondation UDP depuis un UE compromis | iperf3 (UDP) |
 | `reg_storm` | tempête d'enregistrements : redémarrages successifs d'un conteneur d'UE (10 UEs) | docker restart |
-| `scan` | balayage de ports de la victime depuis un UE | nmap |
+| `scan` | balayage de ports de la victime depuis un UE | nmap (-sT) |
 
 ```bash
 make up-lab      # génère, démarre le laboratoire isolé (cœur, RAN, attaquants)

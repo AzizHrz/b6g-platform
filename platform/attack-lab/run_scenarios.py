@@ -27,6 +27,13 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "datasets" / "raw" / "security"
 CAPTURES = {"lab-upf-embb": "ogstun", "lab-upf-v2x": "ogstun", "lab-upf-miot": "ogstun", "lab-amf": "any"}
 TOOLS = "b6g/attack-tools:0.1.0"
+IPERF_BASE_PORT = 5201
+
+
+def iperf_port(sc: dict, slice_id: str, idx: int) -> int:
+    """Port du serveur iperf3 de la victime pour un UE (même convention que platform/core/render.py)."""
+    n = sc["ues"]["count_per_slice"]
+    return IPERF_BASE_PORT + [s["id"] for s in sc["slices"]].index(slice_id) * n + idx
 
 
 def sh(*cmd: str, check: bool = True) -> str:
@@ -124,14 +131,17 @@ def main() -> None:
                 pin_route(slice_id, idx, victim)
                 tx0 = tun_tx(slice_id, idx)
                 if scen["label"] == "udp_flood":
-                    # -a <src> : forcer l'adresse source à celle du tunnel, sinon le trafic sort par l'interface directe
-                    sh("docker", "exec", f"lab-attacker-{slice_id}", "timeout", str(scen["duration_s"]), "hping3",
-                       "--udp", "-p", str(p["dst_port"]), "-d", str(p["size_bytes"]), "-i", f"u{int(1e6 / p['pps'])}",
-                       "-I", iface, "-a", src, "-q", victim, check=False)
+                    # Inondation UDP par iperf3 (socket normal, routé par le tunnel via l'adresse source -B) :
+                    # hping3 utilise un socket brut qui contourne le tunnel. Débit élevé = flood.
+                    bitrate = f"{p['pps'] * p['size_bytes'] * 8}"
+                    sh("docker", "exec", f"lab-ue-{slice_id}", "iperf3", "-c", victim, "-p",
+                       str(iperf_port(sc, slice_id, idx)), "-B", src, "-u", "-b", bitrate, "-l", str(p["size_bytes"]),
+                       "-t", str(scen["duration_s"]), check=False)
                 else:
-                    sh("docker", "exec", f"lab-attacker-{slice_id}", "timeout", str(scen["duration_s"]), "nmap", "-sS",
-                       f"-{p['timing']}", "-p", p["ports"], "-e", iface, "-S", src, "-Pn", "--max-retries", "1",
-                       victim, check=False)
+                    # Balayage TCP par connexion (-sT : sockets normaux) : la route /32 épinglée fixe la source au
+                    # tunnel, donc le balayage sort par le tunnel. -sS (socket brut) contournerait le tunnel.
+                    sh("docker", "exec", f"lab-attacker-{slice_id}", "timeout", str(scen["duration_s"] + 10), "nmap",
+                       "-sT", f"-{p['timing']}", "-p", p["ports"], "-Pn", "--max-retries", "1", victim, check=False)
                 sent = tun_tx(slice_id, idx) - tx0
                 unpin_route(slice_id, idx, victim)
                 # Honnêteté du jeu : si rien n'est passé par le tunnel, on n'étiquette pas une attaque fictive

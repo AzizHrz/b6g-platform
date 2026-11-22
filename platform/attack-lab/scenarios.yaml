@@ -8,9 +8,9 @@ pause_s: 20                       # trafic normal seul entre deux attaques
 scenarios:
   - label: udp_flood
     ue: ue-miot-01                # UE compromis (conteneur lab-ue-miot, interface uesimtun0)
-    tool: hping3
+    tool: iperf3-udp              # socket normal routé par le tunnel 5G (hping3 en socket brut le contournait)
     duration_s: 30
-    intensity: {pps: 5000, size_bytes: 512, dst_port: 9999}
+    intensity: {pps: 5000, size_bytes: 512}
   - label: reg_storm
     ue_container: lab-ue-v2x      # 10 UEs v2x : redémarrages successifs du conteneur (ré-enregistrements)
     duration_s: 30
