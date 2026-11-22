@@ -1,0 +1,4 @@
+ts,regime,puissance_totale_w,puissance_miot_upf_w,latence_v2x_p95_ms,latence_embb_p95_ms,economie_w,economie_pct,sla_v2x_tenu,miot_en_veille
+2026-11-21T23:14:43.100Z,sans-sobriete,89.9,3.09,2.15,2.2,,,,
+2026-11-21T23:16:58.609Z,avec-sobriete,85.1,0,2.14,2.16,,,,
+2026-11-21T23:17:03.927Z,synthese,4.800000000000011,,2.14,,4.8,5.3,True,True

@@ -1,0 +1,17 @@
+# Politique de sobriété énergétique (M09, T25.3). Seuils de mise en veille et de réveil, par l'API Actionneur.
+period_s: 10
+cooldown_s: 20                 # garde entre deux actions sur une même cible
+targets:
+  # edge-infer : mise à zéro des répliques quand il ne reçoit plus de requêtes (scale-to-zero)
+  - kind: deployment
+    name: b6g-edge-infer
+    namespace: b6g-edge
+    idle_metric: rate(b6g_app_request_latency_ms_count{app="b6g-edge-infer"}[1m])
+    idle_below: 0.1            # moins de 0,1 requête/s : inactif
+    busy_above: 0.5           # réveil au-delà de 0,5 requête/s
+  # slice miot : mise en veille (arrêt SMF + UPF) quand le débit est quasi nul
+  - kind: slice
+    name: miot
+    idle_metric: sum(b6g_slice_throughput_mbps{slice="miot"})
+    idle_below: 0.05           # < 50 kbit/s
+    busy_above: 0.2

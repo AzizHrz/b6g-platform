@@ -120,15 +120,18 @@ def main() -> None:
                 slice_id = scen["ue"].split("-")[1]
                 idx = int(scen["ue"].rsplit("-", 1)[1]) - 1
                 iface = f"uesimtun{idx}"
+                src = tun_ip(slice_id, idx)   # adresse source du tunnel : déclenche le routage par source d'UERANSIM
                 pin_route(slice_id, idx, victim)
                 tx0 = tun_tx(slice_id, idx)
                 if scen["label"] == "udp_flood":
+                    # -a <src> : forcer l'adresse source à celle du tunnel, sinon le trafic sort par l'interface directe
                     sh("docker", "exec", f"lab-attacker-{slice_id}", "timeout", str(scen["duration_s"]), "hping3",
                        "--udp", "-p", str(p["dst_port"]), "-d", str(p["size_bytes"]), "-i", f"u{int(1e6 / p['pps'])}",
-                       "-I", iface, "-q", victim, check=False)
+                       "-I", iface, "-a", src, "-q", victim, check=False)
                 else:
                     sh("docker", "exec", f"lab-attacker-{slice_id}", "timeout", str(scen["duration_s"]), "nmap", "-sS",
-                       f"-{p['timing']}", "-p", p["ports"], "-e", iface, "-Pn", "--max-retries", "1", victim, check=False)
+                       f"-{p['timing']}", "-p", p["ports"], "-e", iface, "-S", src, "-Pn", "--max-retries", "1",
+                       victim, check=False)
                 sent = tun_tx(slice_id, idx) - tx0
                 unpin_route(slice_id, idx, victim)
                 # Honnêteté du jeu : si rien n'est passé par le tunnel, on n'étiquette pas une attaque fictive

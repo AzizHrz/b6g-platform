@@ -99,7 +99,7 @@ def test_arret_de_slice(sc):
     TcBackend(sc, runner=FakeRunner(), host=host).apply(
         {"type": "slice.state", "target": "miot", "params": {"active": False}, "reason": "t"},
         {"slices": {"miot": {"rate_mbps": 5, "ceil_mbps": 10, "active": True}}})
-    assert host.calls == [("docker", "stop", "smf-miot", "upf-miot")]
+    assert host.calls == [("docker", "stop", "-t", "2", "smf-miot", "upf-miot")]
 
 
 def test_compteurs_octets_par_slice_et_sens(sc):

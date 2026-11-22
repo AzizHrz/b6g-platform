@@ -148,7 +148,7 @@ class TcBackend(MemoryBackend):
     # ---- slice.state ------------------------------------------------------------------------------------------
     def _slice_state(self, sid: str, active: bool, state: dict) -> None:
         if not active:
-            self.host("docker", "stop", self.smf[sid], self.upf[sid])
+            self.host("docker", "stop", "-t", "2", self.smf[sid], self.upf[sid])
             return
         self.host("docker", "start", self.upf[sid])
         self.host("docker", "start", self.smf[sid])

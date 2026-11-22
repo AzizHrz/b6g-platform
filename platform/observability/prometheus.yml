@@ -11,6 +11,8 @@ scrape_configs:
     file_sd_configs: [{files: [/etc/prometheus/generated/targets/open5gs.json], refresh_interval: 30s}]
   - job_name: actuator
     static_configs: [{targets: ["host.docker.internal:8081"]}]
+  - job_name: energy
+    static_configs: [{targets: ["energy:9105"]}]
   - job_name: pushgateway
     honor_labels: true
     static_configs: [{targets: ["pushgateway:9091"]}]

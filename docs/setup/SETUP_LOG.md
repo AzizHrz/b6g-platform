@@ -442,3 +442,35 @@ Une entrée par étape réalisée, la plus récente en bas. Ce journal sert de p
   - La génération d'attaques est bloquée par le contrôle de sécurité de l'environnement en session automatisée : la
     campagne complète est à lancer par le responsable (`make lab-run`).
 - **Retour arrière** : `make down-lab` ; `docker network rm b6g-lab`.
+
+### 2026-11-22 — Énergie (atelier 25) et boucle MAPE-K (atelier 26)
+
+- **Objectif** : exporteur de consommation et politique de sobriété (M09) ; boucle autonome Monitor→Analyze→Decide→Act→Learn (M10).
+- **Commandes** :
+  ```bash
+  make up-energy up-green                 # exporteur énergie (conteneur) + politique de sobriété
+  .venv/bin/python ateliers/a25/run_a25.py
+  make up-mocks-ia                         # Décision :8090 et Jumeau :8091 (mocks équipe 2)
+  .venv/bin/python ateliers/a26/run_a26.py
+  ```
+- **Résultat** : atelier 25 : économie de 4,8 W (5,3 %) par mise en veille de la slice miot et scale-to-zero d'edge-infer,
+  sans impact QoS. Atelier 26 : boucle MAPE-K complète, 10 itérations sans intervention, journal D8, événements
+  `loop.iteration` dans Fabric, compteur `b6g_loop_iterations_total`. Détails et limite : `ateliers/a26/README.md`.
+- **Problèmes et solutions** :
+  - Exporteur énergie collecté par Prometheus malgré le pare-feu : conteneurisé sur le réseau b6g-obs (pas de port hôte).
+  - Un composant mis en veille ne publie plus de CPU : l'exporteur met sa puissance à 0 (sinon dernière valeur figée).
+  - `slice.state` (arrêt des conteneurs) dépassait le délai client : `docker stop -t 2` et client 40 s.
+  - Rôle du Jumeau précisé en sécurité (refuse une action qui introduit une nouvelle violation), pour permettre une
+    convergence en plusieurs étapes au lieu d'exiger un rétablissement en une seule.
+- **Retour arrière** : `make stop-green stop-energy stop-mocks-ia`.
+
+### 2026-11-22 — Correctif D7 : routage des attaques par le tunnel 5G
+
+- **Objectif** : que l'inondation UDP et le balayage passent réellement par la liaison 5G de l'UE (UE→gNB→UPF→victime),
+  et non par l'interface directe du conteneur sur le réseau du laboratoire.
+- **Problème** (signalé par le garde-fou de `run_scenarios.py` : « 0 paquets émis par uesimtun0 ») : la victime
+  `lab-iperf` est sur le même pont que l'interface directe des UEs ; hping3/nmap l'atteignaient directement sans
+  emprunter le tunnel `uesimtunN`. Le garde-fou a refusé de produire un jeu D7 mal étiqueté.
+- **Solution** : forcer l'adresse **source** au tunnel (hping3 `-a <ip_tunnel>`, nmap `-S <ip_tunnel>`) en plus de la
+  route `/32` par le tunnel : le routage par source d'UERANSIM envoie alors le trafic par le tunnel. À relancer par le
+  responsable : `make lab-run` (les outils d'attaque ne sont pas exécutables en session automatisée).

@@ -38,6 +38,14 @@ services:
       - /dev/disk/:/dev/disk:ro
     networks: [b6g-obs]
     restart: unless-stopped
+  energy:
+    image: b6g/energy-exporter:1.0.0
+    build: ../energy
+    container_name: energy
+    environment:
+      B6G_PROM_URL: http://prometheus:9090
+    networks: [b6g-obs]
+    restart: unless-stopped
   grafana:
     image: grafana/grafana:10.4.19
     container_name: grafana

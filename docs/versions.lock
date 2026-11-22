@@ -40,3 +40,4 @@ nodejs                  20.20.2         A21              2026-11-21   # image no
 go                      1.26.4          A21              2026-11-21   # image fabric-ccenv:2.5.16 (chaincode)
 hping3                  3.0.0           A27              2026-11-21   # image attack-tools (labo isolé)
 nmap                    7.94            A27              2026-11-21
+b6g-actuator            2.0.1           A25              2026-11-22   # slice.state : arrêt des conteneurs (docker stop -t 2)
